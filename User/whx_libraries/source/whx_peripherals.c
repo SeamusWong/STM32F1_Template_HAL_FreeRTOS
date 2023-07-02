@@ -28,7 +28,7 @@ void SystemClockConfig(void)
     oscinitstruct.PLL.PLLState = RCC_PLL_ON;
     oscinitstruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
     oscinitstruct.PLL.PLLMUL = RCC_PLL_MUL9;
-    FUNC_CHECK_INIT(HAL_RCC_OscConfig(&oscinitstruct), "ERROR OscConfig");
+    FUNC_CHECK_FOR_HAL(HAL_RCC_OscConfig(&oscinitstruct), "ERROR OscConfig");
 
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
        clocks dividers */
@@ -37,80 +37,86 @@ void SystemClockConfig(void)
     clkinitstruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     clkinitstruct.APB2CLKDivider = RCC_HCLK_DIV1;
     clkinitstruct.APB1CLKDivider = RCC_HCLK_DIV2;
-    FUNC_CHECK_INIT(HAL_RCC_ClockConfig(&clkinitstruct, FLASH_LATENCY_2), "ERROR ClockConfig");
+    FUNC_CHECK_FOR_HAL(HAL_RCC_ClockConfig(&clkinitstruct, FLASH_LATENCY_2), "ERROR ClockConfig");
 }
-
 /**
  * @description: LED区段
  */
-void InitializeLED(void)
+void InitializeLED1(void)
 {
-    FUNC_LED_1_CLK_ENABLE();
-    FUNC_LED_2_CLK_ENABLE();
-    FUNC_LED_3_CLK_ENABLE();
-
-    GPIO_InitTypeDef config_led_struct; /*定义一个GPIO_InitTypeDef类型的结构体*/
-
-    config_led_struct.Mode = GPIO_MODE_OUTPUT_PP;   /*设置引脚的输出类型为推挽输出*/
-    config_led_struct.Pull = GPIO_PULLUP;           /*设置引脚为上拉模式*/
-    config_led_struct.Speed = GPIO_SPEED_FREQ_HIGH; /*设置引脚速率为高速 */
-
-    config_led_struct.Pin = PORT_LED_1_PIN | PORT_LED_2_PIN | PORT_LED_3_PIN; /*选择要控制的GPIO引脚*/
-    HAL_GPIO_Init(PORT_LED_1_GROUP, &config_led_struct);
-
-    FuncLEDColourSet(STATUS_LED_COLOUR_BLACK);
+    InitializeLED1ForPin();
+    InitializeLED1ForProcotol();
 }
 
-void FuncLEDColourSet(Type_Status_LED_Colour m_colour)
+void InitializeLED1ForPin(void)
+{
+    FUNC_LED_1_PIN_CLK_ENABLE();
+
+    GPIO_InitTypeDef config_led_1_gpio; /*定义一个GPIO_InitTypeDef类型的结构体*/
+
+    config_led_1_gpio.Mode = GPIO_MODE_OUTPUT_PP;   /*设置引脚的输出类型为推挽输出*/
+    config_led_1_gpio.Pull = GPIO_PULLUP;           /*设置引脚为上拉模式*/
+    config_led_1_gpio.Speed = GPIO_SPEED_FREQ_HIGH; /*设置引脚速率为高速 */
+
+    config_led_1_gpio.Pin = PORT_LED_1_P1_PIN | PORT_LED_1_P2_PIN | PORT_LED_1_P3_PIN; /*选择要控制的GPIO引脚*/
+    HAL_GPIO_Init(PORT_LED_1_P1_GROUP, &config_led_1_gpio);
+}
+
+void InitializeLED1ForProcotol(void)
+{
+    FuncLED1SetColour(STATUS_LED_COLOUR_BLACK);
+}
+
+void FuncLED1SetColour(Type_Status_LED_Colour m_colour)
 {
     switch (m_colour)
     {
     case STATUS_LED_COLOUR_RED:
-        HAL_GPIO_WritePin(PORT_LED_1_GROUP, PORT_LED_1_PIN, STATUS_LED_ON);
-        HAL_GPIO_WritePin(PORT_LED_2_GROUP, PORT_LED_2_PIN, STATUS_LED_OFF);
-        HAL_GPIO_WritePin(PORT_LED_3_GROUP, PORT_LED_3_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN, STATUS_LED_OFF);
         break;
 
     case STATUS_LED_COLOUR_GREEN:
-        HAL_GPIO_WritePin(PORT_LED_1_GROUP, PORT_LED_1_PIN, STATUS_LED_OFF);
-        HAL_GPIO_WritePin(PORT_LED_2_GROUP, PORT_LED_2_PIN, STATUS_LED_ON);
-        HAL_GPIO_WritePin(PORT_LED_3_GROUP, PORT_LED_3_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN, STATUS_LED_OFF);
         break;
 
     case STATUS_LED_COLOUR_BLUE:
-        HAL_GPIO_WritePin(PORT_LED_1_GROUP, PORT_LED_1_PIN, STATUS_LED_OFF);
-        HAL_GPIO_WritePin(PORT_LED_2_GROUP, PORT_LED_2_PIN, STATUS_LED_OFF);
-        HAL_GPIO_WritePin(PORT_LED_3_GROUP, PORT_LED_3_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN, STATUS_LED_ON);
         break;
 
     case STATUS_LED_COLOUR_YELLOW:
-        HAL_GPIO_WritePin(PORT_LED_1_GROUP, PORT_LED_1_PIN, STATUS_LED_ON);
-        HAL_GPIO_WritePin(PORT_LED_2_GROUP, PORT_LED_2_PIN, STATUS_LED_ON);
-        HAL_GPIO_WritePin(PORT_LED_3_GROUP, PORT_LED_3_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN, STATUS_LED_OFF);
         break;
 
     case STATUS_LED_COLOUR_PURPLE:
-        HAL_GPIO_WritePin(PORT_LED_1_GROUP, PORT_LED_1_PIN, STATUS_LED_ON);
-        HAL_GPIO_WritePin(PORT_LED_2_GROUP, PORT_LED_2_PIN, STATUS_LED_OFF);
-        HAL_GPIO_WritePin(PORT_LED_3_GROUP, PORT_LED_3_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN, STATUS_LED_ON);
         break;
 
     case STATUS_LED_COLOUR_CYAN:
-        HAL_GPIO_WritePin(PORT_LED_1_GROUP, PORT_LED_1_PIN, STATUS_LED_OFF);
-        HAL_GPIO_WritePin(PORT_LED_2_GROUP, PORT_LED_2_PIN, STATUS_LED_ON);
-        HAL_GPIO_WritePin(PORT_LED_3_GROUP, PORT_LED_3_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN, STATUS_LED_ON);
         break;
 
     case STATUS_LED_COLOUR_WHITE:
-        HAL_GPIO_WritePin(PORT_LED_1_GROUP, PORT_LED_1_PIN, STATUS_LED_ON);
-        HAL_GPIO_WritePin(PORT_LED_2_GROUP, PORT_LED_2_PIN, STATUS_LED_ON);
-        HAL_GPIO_WritePin(PORT_LED_3_GROUP, PORT_LED_3_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN, STATUS_LED_ON);
+        HAL_GPIO_WritePin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN, STATUS_LED_ON);
         break;
 
     case STATUS_LED_COLOUR_BLACK:
-        HAL_GPIO_WritePin(PORT_LED_1_GROUP, PORT_LED_1_PIN, STATUS_LED_OFF);
-        HAL_GPIO_WritePin(PORT_LED_2_GROUP, PORT_LED_2_PIN, STATUS_LED_OFF);
-        HAL_GPIO_WritePin(PORT_LED_3_GROUP, PORT_LED_3_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN, STATUS_LED_OFF);
+        HAL_GPIO_WritePin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN, STATUS_LED_OFF);
         break;
 
     default:
@@ -118,42 +124,42 @@ void FuncLEDColourSet(Type_Status_LED_Colour m_colour)
     }
 }
 
-Type_Status_LED_Colour FuncLEDColourRead(void)
+Type_Status_LED_Colour FuncLED1ReadColour(void)
 {
     Type_Status_LED_Colour result;
-    GPIO_PinState state_red = HAL_GPIO_ReadPin(PORT_LED_1_GROUP, PORT_LED_1_PIN);
-    GPIO_PinState state_green = HAL_GPIO_ReadPin(PORT_LED_2_GROUP, PORT_LED_2_PIN);
-    GPIO_PinState state_blue = HAL_GPIO_ReadPin(PORT_LED_3_GROUP, PORT_LED_3_PIN);
+    GPIO_PinState state_red = HAL_GPIO_ReadPin(PORT_LED_1_P1_GROUP, PORT_LED_1_P1_PIN);
+    GPIO_PinState state_green = HAL_GPIO_ReadPin(PORT_LED_1_P2_GROUP, PORT_LED_1_P2_PIN);
+    GPIO_PinState state_blue = HAL_GPIO_ReadPin(PORT_LED_1_P3_GROUP, PORT_LED_1_P3_PIN);
 
-    if (state_red == STATUS_KEY_ON && state_green == STATUS_KEY_OFF && state_blue == STATUS_KEY_OFF)
+    if (state_red == STATUS_LED_ON && state_green == STATUS_LED_OFF && state_blue == STATUS_LED_OFF)
     {
         result = STATUS_LED_COLOUR_RED;
     }
-    else if (state_red == STATUS_KEY_OFF && state_green == STATUS_KEY_ON && state_blue == STATUS_KEY_OFF)
+    else if (state_red == STATUS_LED_OFF && state_green == STATUS_LED_ON && state_blue == STATUS_LED_OFF)
     {
         result = STATUS_LED_COLOUR_GREEN;
     }
-    else if (state_red == STATUS_KEY_OFF && state_green == STATUS_KEY_OFF && state_blue == STATUS_KEY_ON)
+    else if (state_red == STATUS_LED_OFF && state_green == STATUS_LED_OFF && state_blue == STATUS_LED_ON)
     {
         result = STATUS_LED_COLOUR_BLUE;
     }
-    else if (state_red == STATUS_KEY_ON && state_green == STATUS_KEY_ON && state_blue == STATUS_KEY_OFF)
+    else if (state_red == STATUS_LED_ON && state_green == STATUS_LED_ON && state_blue == STATUS_LED_OFF)
     {
         result = STATUS_LED_COLOUR_YELLOW;
     }
-    else if (state_red == STATUS_KEY_ON && state_green == STATUS_KEY_OFF && state_blue == STATUS_KEY_ON)
+    else if (state_red == STATUS_LED_ON && state_green == STATUS_LED_OFF && state_blue == STATUS_LED_ON)
     {
         result = STATUS_LED_COLOUR_PURPLE;
     }
-    else if (state_red == STATUS_KEY_OFF && state_green == STATUS_KEY_ON && state_blue == STATUS_KEY_ON)
+    else if (state_red == STATUS_LED_OFF && state_green == STATUS_LED_ON && state_blue == STATUS_LED_ON)
     {
         result = STATUS_LED_COLOUR_CYAN;
     }
-    else if (state_red == STATUS_KEY_ON && state_green == STATUS_KEY_ON && state_blue == STATUS_KEY_ON)
+    else if (state_red == STATUS_LED_ON && state_green == STATUS_LED_ON && state_blue == STATUS_LED_ON)
     {
         result = STATUS_LED_COLOUR_WHITE;
     }
-    else if (state_red == STATUS_KEY_OFF && state_green == STATUS_KEY_OFF && state_blue == STATUS_KEY_OFF)
+    else if (state_red == STATUS_LED_OFF && state_green == STATUS_LED_OFF && state_blue == STATUS_LED_OFF)
     {
         result = STATUS_LED_COLOUR_BLACK;
     }
@@ -164,39 +170,48 @@ Type_Status_LED_Colour FuncLEDColourRead(void)
     return result;
 }
 
-void FuncLEDToggle(void)
+void FuncLED1Toggle(void)
 {
     static Type_Status_LED_Colour colour_record = STATUS_LED_COLOUR_WHITE;
-    if (FuncLEDColourRead() != STATUS_LED_COLOUR_BLACK)
+    if (FuncLED1ReadColour() != STATUS_LED_COLOUR_BLACK)
     {
-        colour_record = FuncLEDColourRead();
-        FuncLEDColourSet(STATUS_LED_COLOUR_BLACK);
+        colour_record = FuncLED1ReadColour();
+        FuncLED1SetColour(STATUS_LED_COLOUR_BLACK);
     }
     else
     {
-        FuncLEDColourSet(colour_record);
+        FuncLED1SetColour(colour_record);
     }
 }
 
 /**
  * @description: KEY区段
  */
-void InitializeKEY(void)
+void InitializeKEY1(void)
 {
-
-    FUNC_KEY_1_CLK_ENABLE(); /*开启按键GPIO口的时钟*/
-    FUNC_KEY_2_CLK_ENABLE();
-
-    GPIO_InitTypeDef config_key_gpio_struct;
-
-    config_key_gpio_struct.Mode = GPIO_MODE_INPUT; /*设置引脚为输入模式*/
-    config_key_gpio_struct.Pull = GPIO_NOPULL;     /*设置引脚不上拉也不下拉*/
-
-    config_key_gpio_struct.Pin = PORT_KEY_1_PIN | PORT_KEY_2_PIN; /*选择按键的引脚*/
-    HAL_GPIO_Init(PORT_KEY_1_GROUP, &config_key_gpio_struct);     /*使用上面的结构体初始化按键*/
+    InitializeKEY1ForPin();
+    InitializeKEY1ForProcotol();
 }
 
-Type_Status_Key FuncKEY1StatusRead(void)
+void InitializeKEY1ForPin(void)
+{
+    FUNC_KEY_1_PIN_CLK_ENABLE(); /*开启按键GPIO口的时钟*/
+
+    GPIO_InitTypeDef config_key_1_gpio;
+
+    config_key_1_gpio.Mode = GPIO_MODE_INPUT; /*设置引脚为输入模式*/
+    config_key_1_gpio.Pull = GPIO_NOPULL;     /*设置引脚不上拉也不下拉*/
+
+    config_key_1_gpio.Pin = PORT_KEY_1_PIN; /*选择按键的引脚*/
+    HAL_GPIO_Init(PORT_KEY_1_GROUP, &config_key_1_gpio);     /*使用上面的结构体初始化按键*/
+}
+
+void InitializeKEY1ForProcotol(void)
+{
+    ;
+}
+
+Type_Status_KEY FuncKEY1ReadStatus(void)
 {
     static uint8_t status_key_1_record = STATUS_KEY_OFF;
     if (HAL_GPIO_ReadPin(PORT_KEY_1_GROUP, PORT_KEY_1_PIN) == STATUS_KEY_ON)
@@ -215,7 +230,31 @@ Type_Status_Key FuncKEY1StatusRead(void)
     }
 }
 
-Type_Status_Key FuncKEY2StatusRead(void)
+void InitializeKEY2(void)
+{
+    InitializeKEY2ForPin();
+    InitializeKEY2ForProcotol();
+}
+
+void InitializeKEY2ForPin(void)
+{
+    FUNC_KEY_2_PIN_CLK_ENABLE();
+
+    GPIO_InitTypeDef config_key_2_gpio;
+
+    config_key_2_gpio.Mode = GPIO_MODE_INPUT; /*设置引脚为输入模式*/
+    config_key_2_gpio.Pull = GPIO_NOPULL;     /*设置引脚不上拉也不下拉*/
+
+    config_key_2_gpio.Pin = PORT_KEY_2_PIN; /*选择按键的引脚*/
+    HAL_GPIO_Init(PORT_KEY_2_GROUP, &config_key_2_gpio);     /*使用上面的结构体初始化按键*/
+}
+
+void InitializeKEY2ForProcotol(void)
+{
+    ;
+}
+
+Type_Status_KEY FuncKEY2ReadStatus(void)
 {
     static uint8_t status_key_2_record = STATUS_KEY_OFF;
     if (HAL_GPIO_ReadPin(PORT_KEY_2_GROUP, PORT_KEY_2_PIN) == STATUS_KEY_ON)
@@ -237,10 +276,15 @@ Type_Status_Key FuncKEY2StatusRead(void)
 /**
  * @description: BEEP区段
  */
-void InitializeBEEP(void)
+void InitializeBEEP1(void)
 {
+    InitializeBEEP1ForPin();
+    InitializeBEEP1ForProcotol();
+}
 
-    FUNC_BEEP_CLK_ENABLE(); /*开启GPIO口的时钟*/
+void InitializeBEEP1ForPin(void)
+{
+    FUNC_BEEP_1_PIN_CLK_ENABLE(); /*开启GPIO口的时钟*/
 
     GPIO_InitTypeDef config_beep_gpio_struct;
 
@@ -248,21 +292,25 @@ void InitializeBEEP(void)
     config_beep_gpio_struct.Pull = GPIO_PULLDOWN;         /*设置引脚下拉*/
     config_beep_gpio_struct.Speed = GPIO_SPEED_FREQ_HIGH; /*设置GPIO速率为50MHz */
 
-    config_beep_gpio_struct.Pin = PORT_BEEP_PIN;              /*选择引脚*/
-    HAL_GPIO_Init(PORT_BEEP_GROUP, &config_beep_gpio_struct); /*使用上面的结构体初始化*/
-    FuncBEEPSet(STATUS_BEEP_OFF);
+    config_beep_gpio_struct.Pin = PORT_BEEP_1_PIN;              /*选择引脚*/
+    HAL_GPIO_Init(PORT_BEEP_1_GROUP, &config_beep_gpio_struct); /*使用上面的结构体初始化*/
 }
 
-void FuncBEEPSet(Type_Status_BEEP m_status_beep)
+void InitializeBEEP1ForProcotol(void)
+{
+    FuncBEEP1SetStatus(STATUS_BEEP_OFF);
+}
+
+void FuncBEEP1SetStatus(Type_Status_BEEP m_status_beep)
 {
     switch (m_status_beep)
     {
     case STATUS_BEEP_ON:
-        HAL_GPIO_WritePin(PORT_BEEP_GROUP, PORT_BEEP_PIN, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(PORT_BEEP_1_GROUP, PORT_BEEP_1_PIN, STATUS_BEEP_ON);
         break;
 
     case STATUS_BEEP_OFF:
-        HAL_GPIO_WritePin(PORT_BEEP_GROUP, PORT_BEEP_PIN, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(PORT_BEEP_1_GROUP, PORT_BEEP_1_PIN, STATUS_BEEP_OFF);
         break;
 
     default:
@@ -273,85 +321,118 @@ void FuncBEEPSet(Type_Status_BEEP m_status_beep)
 /**
  * @description: EEPROM区段
  */
-void InitializeEEPROM(void)
+void InitializeEEPROM1(void)
 {
-    InitializeI2C1();
+    InitializeEEPROM1ForPin();
+    InitializeEEPROM1ForProtocol();
 }
 
-void FuncEEPROMWrite(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_write)
+void InitializeEEPROM1ForPin(void)
 {
-    FuncI2C1WriteForMemory(m_buffer_ptr, m_target_mem_ptr, m_num_to_write);
+    InitializeIIC1ForPin();
 }
 
-void FuncEEPROMRead(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_read)
+void InitializeEEPROM1ForProtocol(void)
 {
-    FuncI2C1ReadForMemory(m_buffer_ptr, m_target_mem_ptr, m_num_to_read);
+    InitializeIIC1ForProtocol();
 }
 
-void FuncEEPROMClearAll(void)
+void FuncEEPROM1Write(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_write)
 {
-    uint8_t buffer_clear[CONFIG_I2C_1_TOTALSIZE_TARGETDEVICE] = {0};
-    FuncEEPROMWrite(buffer_clear, 0x0, CONFIG_I2C_1_TOTALSIZE_TARGETDEVICE);
+    FuncIIC1WriteForMemory(PORT_EEPROM_1_ADDRESS_0,STATUS_EEPROM_1_PAGESIZE,m_buffer_ptr, m_target_mem_ptr, m_num_to_write);
+}
+
+void FuncEEPROM1Read(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_read)
+{
+    FuncIIC1ReadForMemory(PORT_EEPROM_1_ADDRESS_0,m_buffer_ptr, m_target_mem_ptr, m_num_to_read);
+}
+
+void FuncEEPROM1ClearAll(void)
+{
+    uint8_t *buffer_clear = (uint8_t *)calloc(1, STATUS_EEPROM_1_TOTALSIZE);
+    FuncEEPROM1Write(buffer_clear, 0x0, STATUS_EEPROM_1_TOTALSIZE);
+    free(buffer_clear);
 }
 
 /**
  * @description: FLASH区段
  */
-void InitializeFLASH(void)
+void InitializeFLASH1(void)
 {
-    InitializeSPI1();
+    InitializeFLASH1ForPin();
+    InitializeFLASH1ForProtocol();
 }
 
-void FuncFLASHCommand(Type_Commd_FLASH m_commd_flash)
+void InitializeFLASH1ForPin(void)
+{
+    FUNC_FLASH_1_PIN_CLK_ENABLE();
+    GPIO_InitTypeDef config_flash_1_gpio; /*定义一个GPIO_InitTypeDef类型的结构体*/
+
+    config_flash_1_gpio.Mode = GPIO_MODE_OUTPUT_PP; /*设置引脚的输出类型为推挽输出*/
+    config_flash_1_gpio.Pull = GPIO_PULLUP;           /*设置引脚无上下拉*/
+    config_flash_1_gpio.Speed = GPIO_SPEED_FREQ_HIGH; /*设置引脚速率为高速 */
+
+    config_flash_1_gpio.Pin = PORT_FLASH_1_NSS_PIN; /*选择要控制的GPIO引脚*/
+    HAL_GPIO_Init(PORT_FLASH_1_NSS_GROUP, &config_flash_1_gpio);
+
+    InitializeSPI1ForPin();
+}
+
+void InitializeFLASH1ForProtocol(void)
+{
+    InitializeSPI1ForProtocol();
+}
+
+void FuncFLASH1Command(Type_Commd_FLASH m_commd_flash)
 {
     uint8_t signal = m_commd_flash;
-    FUNC_FLASH_TRANSMIT((uint8_t *)&signal, sizeof(signal));
+    FUNC_FLASH_1_TRANSMIT((uint8_t *)&signal, sizeof(signal));
 }
 
-uint32_t FuncFLASHCallbackID(void)
+uint32_t FuncFLASH1CallbackID(void)
 {
     uint32_t result;
     uint8_t callback_id[3] = {0};
 
-    FUNC_FLASH_NSS_READY();
-    FuncFLASHCommand(COMMD_FLASH_JEDECDEVICEID);
-    FUNC_FLASH_RECEIVE((uint8_t *)&callback_id, sizeof(callback_id));
-    FUNC_FLASH_NSS_QUIT();
+    FUNC_FLASH_1_NSS_READY();
+    FuncFLASH1Command(COMMD_FLASH_JEDECDEVICEID);
+    FUNC_FLASH_1_RECEIVE((uint8_t *)&callback_id, sizeof(callback_id));
+    FUNC_FLASH_1_NSS_QUIT();
 
     result = (callback_id[0] << 8 * 2) | (callback_id[1] << 8 * 1) | (callback_id[2] << 8 * 0);
     return result;
 }
 
-void FuncFLASHWriteEnable(void)
+void FuncFLASH1WriteEnable(void)
 {
-    FUNC_FLASH_NSS_READY();
-    FuncFLASHCommand(COMMD_FLASH_WRITEENABLE);
-    FUNC_FLASH_NSS_QUIT();
-    FuncFLASHWaitForWrite();
+    FUNC_FLASH_1_NSS_READY();
+    FuncFLASH1Command(COMMD_FLASH_WRITEENABLE);
+    FUNC_FLASH_1_NSS_QUIT();
+    FuncFLASH1WaitForWrite();
 }
 
-void FuncFLASHEraseForSectorSingle(uint32_t m_target_mem_ptr)
+void FuncFLASH1EraseForSectorSingle(uint32_t m_target_mem_ptr)
 {
-    FuncFLASHWriteEnable();
+    FuncFLASH1WriteEnable();
     if (m_target_mem_ptr % 0x001000 != 0)
     {
         m_target_mem_ptr -= m_target_mem_ptr % 0x001000;
         m_target_mem_ptr += 0x001000;
     }
-    FUNC_FLASH_NSS_READY();
-    FuncFLASHCommand(COMMD_FLASH_SECTORERASE);
+    FUNC_FLASH_1_NSS_READY();
+    FuncFLASH1Command(COMMD_FLASH_SECTORERASE);
 
     uint8_t target_men_ptr_array[3] = {0};
     target_men_ptr_array[0] = (uint8_t)m_target_mem_ptr >> 8 * 2;
     target_men_ptr_array[1] = (uint8_t)m_target_mem_ptr >> 8 * 1;
     target_men_ptr_array[2] = (uint8_t)m_target_mem_ptr >> 8 * 0;
-    FUNC_FLASH_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
+    FUNC_FLASH_1_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
 
-    FUNC_FLASH_NSS_QUIT();
-    FuncFLASHWaitForWrite();
+    FUNC_FLASH_1_NSS_QUIT();
+    FuncFLASH1WaitForWrite();
 }
 
-void FuncFLASHEraseForSector(uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
+void FuncFLASH1EraseForSector(uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
 {
     if (m_target_mem_ptr % 0x001000 != 0)
     {
@@ -361,111 +442,111 @@ void FuncFLASHEraseForSector(uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
 
     for (uint16_t count_page = (uint16_t)(m_num_to_write / 0x001000); count_page > 0; count_page--)
     {
-        FuncFLASHEraseForSectorSingle(m_target_mem_ptr);
+        FuncFLASH1EraseForSectorSingle(m_target_mem_ptr);
         m_target_mem_ptr += 0x001000;
         m_num_to_write -= 0x001000;
     }
 
     if (m_num_to_write > 0)
     {
-        FuncFLASHEraseForSectorSingle(m_target_mem_ptr);
+        FuncFLASH1EraseForSectorSingle(m_target_mem_ptr);
     }
 }
 
-void FuncFLASHWriteForPage(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
+void FuncFLASH1WriteForPage(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
 {
     if (m_num_to_write == 0)
     {
         return;
     }
-    if (m_num_to_write > STATUS_FLASH_PAGESIZE)
+    if (m_num_to_write > STATUS_FLASH_1_PAGESIZE)
     {
-        m_num_to_write = STATUS_FLASH_PAGESIZE;
+        m_num_to_write = STATUS_FLASH_1_PAGESIZE;
     }
-    FuncFLASHWriteEnable();
-    FUNC_FLASH_NSS_READY();
-    FuncFLASHCommand(COMMD_FLASH_PAGEPROGRAM);
+    FuncFLASH1WriteEnable();
+    FUNC_FLASH_1_NSS_READY();
+    FuncFLASH1Command(COMMD_FLASH_PAGEPROGRAM);
 
     uint8_t target_men_ptr_array[3] = {0};
     target_men_ptr_array[0] = (uint8_t)m_target_mem_ptr >> 8 * 2;
     target_men_ptr_array[1] = (uint8_t)m_target_mem_ptr >> 8 * 1;
     target_men_ptr_array[2] = (uint8_t)m_target_mem_ptr >> 8 * 0;
-    FUNC_FLASH_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
+    FUNC_FLASH_1_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
 
-    FUNC_FLASH_TRANSMIT((uint8_t *)m_buffer_ptr, m_num_to_write);
+    FUNC_FLASH_1_TRANSMIT((uint8_t *)m_buffer_ptr, m_num_to_write);
 
-    FUNC_FLASH_NSS_QUIT();
-    FuncFLASHWaitForWrite();
+    FUNC_FLASH_1_NSS_QUIT();
+    FuncFLASH1WaitForWrite();
 }
 
-void FuncFLASHWrite(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
+void FuncFLASH1Write(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
 {
-    FuncFLASHEraseForSector(m_target_mem_ptr, m_num_to_write);
+    FuncFLASH1EraseForSector(m_target_mem_ptr, m_num_to_write);
     HAL_Delay(100);
 
-    if (m_num_to_write < STATUS_FLASH_PAGESIZE - (m_target_mem_ptr % STATUS_FLASH_PAGESIZE))
+    if (m_num_to_write < STATUS_FLASH_1_PAGESIZE - (m_target_mem_ptr % STATUS_FLASH_1_PAGESIZE))
     {
-        FuncFLASHWriteForPage(m_buffer_ptr, m_target_mem_ptr, m_num_to_write);
+        FuncFLASH1WriteForPage(m_buffer_ptr, m_target_mem_ptr, m_num_to_write);
         m_num_to_write -= m_num_to_write;
     }
     else
     {
-        uint16_t temp_num_to_write = STATUS_FLASH_PAGESIZE - (m_target_mem_ptr % STATUS_FLASH_PAGESIZE);
-        FuncFLASHWriteForPage(m_buffer_ptr, m_target_mem_ptr, temp_num_to_write);
+        uint16_t temp_num_to_write = STATUS_FLASH_1_PAGESIZE - (m_target_mem_ptr % STATUS_FLASH_1_PAGESIZE);
+        FuncFLASH1WriteForPage(m_buffer_ptr, m_target_mem_ptr, temp_num_to_write);
         m_buffer_ptr += temp_num_to_write;
         m_target_mem_ptr += temp_num_to_write;
         m_num_to_write -= temp_num_to_write;
     }
 
-    for (uint16_t count_page = (uint16_t)(m_num_to_write / STATUS_FLASH_PAGESIZE); count_page > 0; count_page--)
+    for (uint16_t count_page = (uint16_t)(m_num_to_write / STATUS_FLASH_1_PAGESIZE); count_page > 0; count_page--)
     {
-        FuncFLASHWriteForPage(m_buffer_ptr, m_target_mem_ptr, STATUS_FLASH_PAGESIZE);
-        m_buffer_ptr += STATUS_FLASH_PAGESIZE;
-        m_target_mem_ptr += STATUS_FLASH_PAGESIZE;
-        m_num_to_write -= STATUS_FLASH_PAGESIZE;
+        FuncFLASH1WriteForPage(m_buffer_ptr, m_target_mem_ptr, STATUS_FLASH_1_PAGESIZE);
+        m_buffer_ptr += STATUS_FLASH_1_PAGESIZE;
+        m_target_mem_ptr += STATUS_FLASH_1_PAGESIZE;
+        m_num_to_write -= STATUS_FLASH_1_PAGESIZE;
     }
 
     if (m_num_to_write > 0)
     {
-        FuncFLASHWriteForPage(m_buffer_ptr, m_target_mem_ptr, m_num_to_write);
+        FuncFLASH1WriteForPage(m_buffer_ptr, m_target_mem_ptr, m_num_to_write);
     }
 }
 
-void FuncFLASHRead(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_read)
+void FuncFLASH1Read(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_read)
 {
-    FUNC_FLASH_NSS_READY();
-    FuncFLASHCommand(COMMD_FLASH_READDATA);
+    FUNC_FLASH_1_NSS_READY();
+    FuncFLASH1Command(COMMD_FLASH_READDATA);
 
     uint8_t target_men_ptr_array[3] = {0};
     target_men_ptr_array[0] = (uint8_t)m_target_mem_ptr >> 8 * 2;
     target_men_ptr_array[1] = (uint8_t)m_target_mem_ptr >> 8 * 1;
     target_men_ptr_array[2] = (uint8_t)m_target_mem_ptr >> 8 * 0;
-    FUNC_FLASH_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
+    FUNC_FLASH_1_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
 
-    FUNC_FLASH_RECEIVE(m_buffer_ptr, m_num_to_read);
-    FUNC_FLASH_NSS_QUIT();
+    FUNC_FLASH_1_RECEIVE(m_buffer_ptr, m_num_to_read);
+    FUNC_FLASH_1_NSS_QUIT();
 }
 
-void FuncFLASHWaitForWrite(void)
+void FuncFLASH1WaitForWrite(void)
 {
-    FUNC_FLASH_NSS_READY();
-    FuncFLASHCommand(COMMD_FLASH_READSTATUSREG);
+    FUNC_FLASH_1_NSS_READY();
     uint8_t flag = 0x0;
+    uint32_t timeout = CONFIG_FLASH_1_TIMEOUT * (SystemCoreClock / 1000);
 
-    uint32_t timeout = CONFIG_FLASH_TIMEOUT * (SystemCoreClock / 1000);
-    while ((flag & 0x01) == SET)
+    do
     {
-        FUNC_FLASH_RECEIVE((uint8_t *)&flag, sizeof flag);
+        FuncFLASH1Command(COMMD_FLASH_READSTATUSREG);
+        FUNC_FLASH_1_RECEIVE((uint8_t *)&flag, sizeof flag);
         if (!timeout--)
         {
-            printf("FLASH Timeout\n");
-            FuncErrorAlertLEDBEEP();
+            printf("Timeout Flash_1\n");
+            FuncErrorAlert();
         }
-    }
-    FUNC_FLASH_NSS_QUIT();
+    } while ((flag & 0x01) == SET);
+    FUNC_FLASH_1_NSS_QUIT();
 }
 
-void FuncFLASHWaitForRead(void)
+void FuncFLASH1WaitForRead(void)
 {
     ;
 }
@@ -497,7 +578,7 @@ void InitializeLCD(void)
     FuncLCDWriteDataForSingle(0x55);
     HAL_Delay(5);
     /*ST7789S Frame rate setting*/
-    FuncFSMCCommand(COMMD_LCD_PORCTRL);
+    FuncFSMCCommand(COMMD_LCD_PORCTRL); 
     FuncLCDWriteDataForSingle(0x0c);
     FuncLCDWriteDataForSingle(0x0c);
     FuncLCDWriteDataForSingle(0x00);
@@ -907,7 +988,7 @@ void InitializeADC1(void)
 
 void InitializeADC1ForGpio(void)
 {
-    FUNC_ADC1_PIN_ALL_CLK_ENABLE();
+    FUNC_ADC1_PIN_CLK_ENABLE();
 
     GPIO_InitTypeDef config_adc1_gpio_struct;
 
@@ -917,8 +998,6 @@ void InitializeADC1ForGpio(void)
 
     config_adc1_gpio_struct.Pin = PORT_ADC1_1_PIN;
     HAL_GPIO_Init(PORT_ADC1_1_GROUP, &config_adc1_gpio_struct);
-    config_adc1_gpio_struct.Pin = PORT_ADC1_2_PIN;
-    HAL_GPIO_Init(PORT_ADC1_2_GROUP, &config_adc1_gpio_struct);
 }
 
 void InitializeADC1ForProtocol(void)
@@ -937,18 +1016,15 @@ void InitializeADC1ForProtocol(void)
     V_config_adc1.Init.NbrOfConversion = CONFIG_ADC1_NBROFCONVERSION;
     V_config_adc1.Init.NbrOfDiscConversion = CONFIG_ADC1_NBROFDISCCONVERSION;
     V_config_adc1.Init.ScanConvMode = CONFIG_ADC1_SCANCONVMODE;
-    FUNC_CHECK_INIT(HAL_ADC_Init(&V_config_adc1), "ERROR ADC_Init");
+    FUNC_CHECK_FOR_HAL(HAL_ADC_Init(&V_config_adc1), "ERROR ADC_Init");
 
-    ADC_ChannelConfTypeDef config_adc1_channel_struct;
+    ADC_ChannelConfTypeDef config_adc1_channel;
 
-    config_adc1_channel_struct.SamplingTime = CONFIG_ADC1_CHANNEL_SAMPLINGTIME;
+    config_adc1_channel.SamplingTime = CONFIG_ADC1_CHANNEL_SAMPLINGTIME;
 
-    config_adc1_channel_struct.Channel = PORT_ADC1_1_CHANNEL;
-    config_adc1_channel_struct.Rank = 1;
-    HAL_ADC_ConfigChannel(&V_config_adc1, &config_adc1_channel_struct);
-    config_adc1_channel_struct.Channel = PORT_ADC1_2_CHANNEL;
-    config_adc1_channel_struct.Rank = 2;
-    HAL_ADC_ConfigChannel(&V_config_adc1, &config_adc1_channel_struct);
+    config_adc1_channel.Channel = PORT_ADC1_1_CHANNEL;
+    config_adc1_channel.Rank = 1;
+    HAL_ADC_ConfigChannel(&V_config_adc1, &config_adc1_channel);
 
     __HAL_LINKDMA(&V_config_adc1, DMA_Handle, V_config_dma1);
 
@@ -963,19 +1039,106 @@ float FuncADC1GetVoltage(uint32_t m_adc_channel)
     {
         result = ((float)V_data_adc1_array[0] / STATUS_ADC1_ACCURACY) * STATUS_ADC1_INPUTVOLTAGE;
     }
-    else if (m_adc_channel == PORT_ADC1_2_CHANNEL)
-    {
-        result = ((float)V_data_adc1_array[1] / STATUS_ADC1_ACCURACY) * STATUS_ADC1_INPUTVOLTAGE;
-    }
+
     else
         ;
     return result;
 }
 
-void FuncErrorAlertLEDBEEP(void)
+/**
+ * @description: 电容按键区段
+ */
+uint16_t V_data_capacitivebutton_threshold = 0;
+
+void InitializeCapacitiveButton(void)
 {
-    // FuncBEEPSet(STATUS_BEEP_ON);
-    FuncLEDColourSet(STATUS_LED_COLOUR_RED);
+    InitializeCapacitiveButtonForGpio();
+    InitializeCapacitiveButtonForProtocol();
+}
+
+void InitializeCapacitiveButtonForGpio(void)
+{
+    FUNC_CAPACITIVEBUTTON_PIN_CLK_ENABLE();
+
+    GPIO_InitTypeDef config_capacitive_button_gpio_struct;
+
+    config_capacitive_button_gpio_struct.Mode = GPIO_MODE_INPUT;
+    config_capacitive_button_gpio_struct.Pull = GPIO_NOPULL;
+    config_capacitive_button_gpio_struct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    config_capacitive_button_gpio_struct.Pin = PORT_CAPACITIVEBUTTON_1_PIN;
+    HAL_GPIO_Init(PORT_CAPACITIVEBUTTON_1_GROUP, &config_capacitive_button_gpio_struct);
+}
+
+void InitializeCapacitiveButtonForProtocol(void)
+{
+    InitializeTIM5General();
+}
+
+void FuncCapacitiveButtonReset(void)
+{
+    FUNC_CAPACITIVEBUTTON_PIN_CLK_ENABLE();
+
+    GPIO_InitTypeDef config_capacitive_button_gpio_struct;
+
+    config_capacitive_button_gpio_struct.Mode = GPIO_MODE_OUTPUT_PP;
+    config_capacitive_button_gpio_struct.Pull = GPIO_PULLDOWN;
+    config_capacitive_button_gpio_struct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    config_capacitive_button_gpio_struct.Pin = PORT_CAPACITIVEBUTTON_1_PIN;
+    HAL_GPIO_Init(PORT_CAPACITIVEBUTTON_1_GROUP, &config_capacitive_button_gpio_struct);
+
+    HAL_GPIO_WritePin(PORT_CAPACITIVEBUTTON_1_GROUP, PORT_CAPACITIVEBUTTON_1_PIN, GPIO_PIN_RESET);
+    FuncDelayMicrosecondsForAll(5000);
+
+    config_capacitive_button_gpio_struct.Mode = GPIO_MODE_INPUT;
+    config_capacitive_button_gpio_struct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(PORT_CAPACITIVEBUTTON_1_GROUP, &config_capacitive_button_gpio_struct);
+
+    __HAL_TIM_SET_COUNTER(&V_config_tim5general, 0);
+    V_data_tim5general_ic_ch2.data_period = 0;
+    V_data_tim5general_ic_ch2.data_register = 0;
+    V_data_tim5general_ic_ch2.flag_start = 0;
+}
+
+uint16_t FuncCapacitiveButtonReadPulseWidth(void)
+{
+    uint16_t result = 0;
+    for (int count = 0; count < 10; count++)
+    {
+        FuncCapacitiveButtonReset();
+
+        FUNC_WAITSTATUS_TIMEOUT(V_data_tim5general_ic_ch2.flag_start, 1, 100, "ERROR CapacitiveButton_Timeout");
+
+        result += FuncTIM5GeneralGetICValue(PORT_TIM5GENERAL_CHANNEL_2);
+    }
+    result /= 10;
+    return result;
+}
+
+void FuncCapacitiveButtonSetThreshold(uint16_t m_threshold)
+{
+    V_data_capacitivebutton_threshold = m_threshold;
+}
+
+Type_Status_CapacitiveButton FuncCapacitiveButtonStatusRead(void)
+{
+    if (FuncCapacitiveButtonReadPulseWidth() > V_data_capacitivebutton_threshold)
+    {
+        return STATUS_CAPACITIVEBUTTON_ON;
+    }
+    else
+    {
+        return STATUS_CAPACITIVEBUTTON_OFF;
+    }
+}
+
+void FuncErrorAlert(void)
+{
+    InitializeLED1();
+    InitializeBEEP1();
+    // FuncBEEP1SetStatus(STATUS_BEEP_ON);
+    FuncLED1SetColour(STATUS_LED_COLOUR_RED);
     while (1)
         ;
 }

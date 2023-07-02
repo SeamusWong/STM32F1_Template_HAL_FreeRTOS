@@ -2,36 +2,42 @@
 #define H_WHX_PERIPHERALS_
 
 #include "whx_libraries_all.h"
-#include "GB2312_Font.h"
+#include "whx_communicate.h"
+#include "whx_on_chip.h"
 
 void SystemClockConfig(void);
 
 /**
  * @description: LED端口配置
  */
-#define PORT_LED_1_GROUP GPIOB
-#define PORT_LED_1_PIN GPIO_PIN_5
+#define PORT_LED_1_P1_GROUP GPIOB
+#define PORT_LED_1_P1_PIN GPIO_PIN_5
 
-#define PORT_LED_2_GROUP GPIOB
-#define PORT_LED_2_PIN GPIO_PIN_0
+#define PORT_LED_1_P2_GROUP GPIOB
+#define PORT_LED_1_P2_PIN GPIO_PIN_0
 
-#define PORT_LED_3_GROUP GPIOB
-#define PORT_LED_3_PIN GPIO_PIN_1
+#define PORT_LED_1_P3_GROUP GPIOB
+#define PORT_LED_1_P3_PIN GPIO_PIN_1
 
-#define STATUS_LED_ON GPIO_PIN_RESET
-#define STATUS_LED_OFF GPIO_PIN_SET
+#define FUNC_LED_1_PIN_CLK_ENABLE(args) \
+    do                                  \
+    {                                   \
+        __HAL_RCC_GPIOB_CLK_ENABLE();   \
+    } while (0U);
+#define FUNC_LED_1_PIN_CLK_DISABLE(args) \
+    do                                   \
+    {                                    \
+        __HAL_RCC_GPIOB_CLK_DISABLE();   \
+    } while (0U);
 
-#define FUNC_LED_1_CLK_ENABLE(args) __HAL_RCC_GPIOB_CLK_ENABLE(args)
-#define FUNC_LED_2_CLK_ENABLE(args) __HAL_RCC_GPIOB_CLK_ENABLE(args)
-#define FUNC_LED_3_CLK_ENABLE(args) __HAL_RCC_GPIOB_CLK_ENABLE(args)
-#define FUNC_LED_1_CLK_DISABLE(args) __HAL_RCC_GPIOB_CLK_DISABLE(args)
-#define FUNC_LED_2_CLK_DISABLE(args) __HAL_RCC_GPIOB_CLK_DISABLE(args)
-#define FUNC_LED_3_CLK_DISABLE(args) __HAL_RCC_GPIOB_CLK_DISABLE(args)
 /*********************************LED端口配置************************************/
 
 /**
  * @description: LED功能
  */
+#define STATUS_LED_ON GPIO_PIN_RESET
+#define STATUS_LED_OFF GPIO_PIN_SET
+
 typedef enum
 {
     STATUS_LED_COLOUR_RED,
@@ -44,10 +50,12 @@ typedef enum
     STATUS_LED_COLOUR_BLACK
 } Type_Status_LED_Colour;
 
-void InitializeLED(void);
-void FuncLEDColourSet(Type_Status_LED_Colour m_colour);
-Type_Status_LED_Colour FuncLEDColourRead(void);
-void FuncLEDToggle(void);
+void InitializeLED1(void);
+void InitializeLED1ForPin(void);
+void InitializeLED1ForProcotol(void);
+void FuncLED1SetColour(Type_Status_LED_Colour m_colour);
+Type_Status_LED_Colour FuncLED1ReadColour(void);
+void FuncLED1Toggle(void);
 /*********************************LED功能************************************/
 
 /**
@@ -59,10 +67,27 @@ void FuncLEDToggle(void);
 #define PORT_KEY_2_GROUP GPIOC
 #define PORT_KEY_2_PIN GPIO_PIN_13
 
-#define FUNC_KEY_1_CLK_ENABLE(args) __HAL_RCC_GPIOA_CLK_ENABLE(args)
-#define FUNC_KEY_2_CLK_ENABLE(args) __HAL_RCC_GPIOC_CLK_ENABLE(args)
-#define FUNC_KEY_1_CLK_DISABLE(args) __HAL_RCC_GPIOA_CLK_DISABLE(args)
-#define FUNC_KEY_2_CLK_DISABLE(args) __HAL_RCC_GPIOC_CLK_DISABLE(args)
+#define FUNC_KEY_1_PIN_CLK_ENABLE(args) \
+    do                                  \
+    {                                   \
+        __HAL_RCC_GPIOA_CLK_ENABLE();   \
+    } while (0U);
+#define FUNC_KEY_1_PIN_CLK_DISABLE(args) \
+    do                                   \
+    {                                    \
+        __HAL_RCC_GPIOA_CLK_DISABLE();   \
+    } while (0U);
+
+#define FUNC_KEY_2_PIN_CLK_ENABLE(args) \
+    do                                  \
+    {                                   \
+        __HAL_RCC_GPIOC_CLK_ENABLE();   \
+    } while (0U);
+#define FUNC_KEY_2_PIN_CLK_DISABLE(args) \
+    do                                   \
+    {                                    \
+        __HAL_RCC_GPIOC_CLK_DISABLE();   \
+    } while (0U);
 /*********************************KEY端口配置************************************/
 
 /**
@@ -70,23 +95,37 @@ void FuncLEDToggle(void);
  */
 typedef enum
 {
-    STATUS_KEY_ON = GPIO_PIN_RESET,
-    STATUS_KEY_OFF = GPIO_PIN_SET
-} Type_Status_Key;
+    STATUS_KEY_ON = GPIO_PIN_SET,
+    STATUS_KEY_OFF = GPIO_PIN_RESET
+} Type_Status_KEY;
 
-void InitializeKEY(void);
-Type_Status_Key FuncKEY1StatusRead(void);
-Type_Status_Key FuncKEY2StatusRead(void);
+void InitializeKEY1(void);
+void InitializeKEY1ForPin(void);
+void InitializeKEY1ForProcotol(void);
+Type_Status_KEY FuncKEY1ReadStatus(void);
+
+void InitializeKEY2(void);
+void InitializeKEY2ForPin(void);
+void InitializeKEY2ForProcotol(void);
+Type_Status_KEY FuncKEY2ReadStatus(void);
 /*********************************KEY功能************************************/
 
 /**
  * @description: BEEP端口配置
  */
-#define PORT_BEEP_GROUP GPIOC
-#define PORT_BEEP_PIN GPIO_PIN_0
+#define PORT_BEEP_1_GROUP GPIOC
+#define PORT_BEEP_1_PIN GPIO_PIN_0
 
-#define FUNC_BEEP_CLK_ENABLE(args) __HAL_RCC_GPIOC_CLK_ENABLE(args)
-#define FUNC_BEEP_CLK_DISABLE(args) __HAL_RCC_GPIOC_CLK_DISABLE(args)
+#define FUNC_BEEP_1_PIN_CLK_ENABLE(args) \
+    do                                   \
+    {                                    \
+        __HAL_RCC_GPIOC_CLK_ENABLE();    \
+    } while (0U);
+#define FUNC_BEEP_1_PIN_CLK_DISABLE(args) \
+    do                                    \
+    {                                     \
+        __HAL_RCC_GPIOC_CLK_DISABLE();    \
+    } while (0U);
 /*********************************BEEP端口配置************************************/
 
 /**
@@ -94,40 +133,51 @@ Type_Status_Key FuncKEY2StatusRead(void);
  */
 typedef enum
 {
-    STATUS_BEEP_ON,
-    STATUS_BEEP_OFF
+    STATUS_BEEP_ON = GPIO_PIN_SET,
+    STATUS_BEEP_OFF = GPIO_PIN_RESET
 } Type_Status_BEEP;
 
-void InitializeBEEP(void);
-void FuncBEEPSet(Type_Status_BEEP m_status_beep);
+void InitializeBEEP1(void);
+void InitializeBEEP1ForPin(void);
+void InitializeBEEP1ForProcotol(void);
+void FuncBEEP1SetStatus(Type_Status_BEEP m_status_beep);
 /*********************************BEEP功能************************************/
 
 /**
  * @description: EEPROM端口配置
  */
-#define PORT_EEPROM_SCL_GROUP GPIOB
-#define PORT_EEPROM_SCL_PIN GPIO_PIN_6
+#define PORT_EEPROM_1_SCL_GROUP PORT_I2C_1_SCL_GROUP
+#define PORT_EEPROM_1_SCL_PIN PORT_I2C_1_SCL_PIN
 
-#define PORT_EEPROM_SDA_GROUP GPIOB
-#define PORT_EEPROM_SDA_PIN GPIO_PIN_7
+#define PORT_EEPROM_1_SDA_GROUP PORT_I2C_1_SDA_GROUP
+#define PORT_EEPROM_1_SDA_PIN PORT_I2C_1_SDA_PIN
 
-#define FUNC_EEPROM_SCL_CLK_ENABLE(args) __HAL_RCC_GPIOB_CLK_ENABLE(args)
-#define FUNC_EEPROM_SDA_CLK_ENABLE(args) __HAL_RCC_GPIOB_CLK_ENABLE(args)
-#define FUNC_EEPROM_SCL_CLK_DISABLE(args) __HAL_RCC_GPIOB_CLK_DISABLE(args)
-#define FUNC_EEPROM_SDA_CLK_DISABLE(args) __HAL_RCC_GPIOB_CLK_DISABLE(args)
+#define FUNC_EEPROM_1_PIN_CLK_ENABLE(args) \
+    do                                     \
+    {                                      \
+        FUNC_IIC1_PIN_CLK_ENABLE();        \
+    } while (0U);
+#define FUNC_EEPROM_1_PIN_CLK_DISABLE(args) \
+    do                                      \
+    {                                       \
+        FUNC_IIC1_PIN_CLK_DISABLE();        \
+    } while (0U);
 
-#define PORT_EEPROM_ADDRESS_0 0xA0 /*设备总线地址*/
+#define FUNC_EEPROM_1_CLK_ENABLE(args) FUNC_IIC1_CLK_ENABLE(args)
+#define FUNC_EEPROM_1_CLK_DISABLE(args) FUNC_IIC1_CLK_DISABLE(args)
 
-#define STATUS_EEPROM_TOTALSIZE 256 /*总容量*/
-#define STATUS_EEPROM_PAGESIZE 8    /*页大小*/
+#define PORT_EEPROM_1_ADDRESS_0 0xA0 /*设备总线地址*/
+
+#define STATUS_EEPROM_1_TOTALSIZE 256 /*总容量*/
+#define STATUS_EEPROM_1_PAGESIZE 8    /*页大小*/
 /*********************************EEPROM端口配置************************************/
 
 /**
  * @description: EEPROM功能
  */
-#ifdef H_WHX_COMMUNICATE_I2C_
-
-void InitializeEEPROM(void);
+void InitializeEEPROM1(void);
+void InitializeEEPROM1ForPin(void);
+void InitializeEEPROM1ForProtocol(void);
 /**
  * @description:EEPROM指定位置写入
  * @param {uint8_t} *m_buffer_ptr 准备发送的缓冲区指针
@@ -135,7 +185,7 @@ void InitializeEEPROM(void);
  * @param {uint8_t} m_num_to_write  要写入的字节数
  * @return {*}
  */
-void FuncEEPROMWrite(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_write);
+void FuncEEPROM1Write(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_write);
 /**
  * @description:EEPROM指定位置读取
  * @param {uint8_t} *m_buffer_ptr 准备接受的缓冲区指针
@@ -143,40 +193,42 @@ void FuncEEPROMWrite(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m
  * @param {uint8_t} m_num_to_read  要读取的字节数
  * @return {*}
  */
-void FuncEEPROMRead(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_read);
-void FuncEEPROMClearAll(void);
-
-#endif /*H_WHX_COMMUNICATE_I2C_*/
+void FuncEEPROM1Read(uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_read);
+void FuncEEPROM1ClearAll(void);
 /*********************************EEPROM功能************************************/
 
 /**
  * @description: FLASH端口配置
  */
-#define PORT_FLASH_SCL_GROUP GPIOA
-#define PORT_FLASH_SCL_PIN GPIO_PIN_5
+#define PORT_FLASH_1_SCL_GROUP PORT_SPI1_SCL_GROUP
+#define PORT_FLASH_1_SCL_PIN PORT_SPI1_SCL_PIN
 
-#define PORT_FLASH_MISO_GROUP GPIOA
-#define PORT_FLASH_MISO_PIN GPIO_PIN_6
+#define PORT_FLASH_1_MISO_GROUP PORT_SPI1_MISO_GROUP
+#define PORT_FLASH_1_MISO_PIN PORT_SPI1_MISO_PIN
 
-#define PORT_FLASH_MOSI_GROUP GPIOA
-#define PORT_FLASH_MOSI_PIN GPIO_PIN_7
+#define PORT_FLASH_1_MOSI_GROUP PORT_SPI1_MOSI_GROUP
+#define PORT_FLASH_1_MOSI_PIN PORT_SPI1_MOSI_PIN
 
-#define PORT_FLASH_NSS_GROUP GPIOA /*片选引脚，有几个外设从机就应该有几个NSS，也叫CS*/
-#define PORT_FLASH_NSS_PIN GPIO_PIN_4
+#define PORT_FLASH_1_NSS_GROUP GPIOA /*片选引脚，有几个外设从机就应该有几个NSS，也叫CS*/
+#define PORT_FLASH_1_NSS_PIN GPIO_PIN_4
 
-#define FUNC_FLASH_SCL_CLK_ENABLE(args) __HAL_RCC_GPIOA_CLK_ENABLE(args)
-#define FUNC_FLASH_MISO_CLK_ENABLE(args) __HAL_RCC_GPIOA_CLK_ENABLE(args)
-#define FUNC_FLASH_MOSI_CLK_ENABLE(args) __HAL_RCC_GPIOA_CLK_ENABLE(args)
-#define FUNC_FLASH_NSS_CLK_ENABLE(args) __HAL_RCC_GPIOA_CLK_ENABLE(args)
-#define FUNC_FLASH_SCL_CLK_DISABLE(args) __HAL_RCC_GPIOA_CLK_DISABLE(args)
-#define FUNC_FLASH_MISO_CLK_DISABLE(args) __HAL_RCC_GPIOA_CLK_DISABLE(args)
-#define FUNC_FLASH_MOSI_CLK_DISABLE(args) __HAL_RCC_GPIOA_CLK_DISABLE(args)
-#define FUNC_FLASH_NSS_CLK_DISABLE(args) __HAL_RCC_GPIOA_CLK_DISABLE(args)
+#define FUNC_FLASH_1_PIN_CLK_ENABLE(args) \
+    do                                    \
+    {                                     \
+        __HAL_RCC_GPIOA_CLK_ENABLE();     \
+        FUNC_SPI1_PIN_CLK_ENABLE();       \
+    } while (0U);
+#define FUNC_FLASH_1_PIN_CLK_DISABLE(args) \
+    do                                     \
+    {                                      \
+        __HAL_RCC_GPIOA_CLK_DISABLE();     \
+        FUNC_SPI1_PIN_CLK_DISABLE();       \
+    } while (0U);
 
-#define STATUS_FLASH_ID 0xEF4017 /*硬件ID，代表了出厂型号*/
-#define STATUS_FLASH_PAGESIZE 256
+#define STATUS_FLASH_1_ID 0xEF4017 /*硬件ID，代表了出厂型号*/
+#define STATUS_FLASH_1_PAGESIZE 256
 
-#define CONFIG_FLASH_TIMEOUT 1000 /*存储超时*/
+#define CONFIG_FLASH_1_TIMEOUT 1000 /*存储超时*/
 /*********************************FLASH端口配置************************************/
 
 /**
@@ -207,26 +259,24 @@ typedef enum
 /**
  * @description: FLASH功能
  */
-#ifdef H_WHX_COMMUNICATE_SPI_
+#define FUNC_FLASH_1_TRANSMIT(m_buffer_ptr, m_num_to_write) FuncSPI1Transmit(m_buffer_ptr, m_num_to_write);
+#define FUNC_FLASH_1_RECEIVE(m_buffer_ptr, m_num_to_read) FuncSPI1Receive(m_buffer_ptr, m_num_to_read)
+#define FUNC_FLASH_1_NSS_READY(args) FuncSPI1NSSReady(PORT_FLASH_1_NSS_GROUP,PORT_FLASH_1_NSS_PIN)
+#define FUNC_FLASH_1_NSS_QUIT(args) FuncSPI1NSSQuit(PORT_FLASH_1_NSS_GROUP, PORT_FLASH_1_NSS_PIN)
 
-#define FUNC_FLASH_TRANSMIT(args_1, args_2) FuncSPI1Transmit(args_1, args_2)
-#define FUNC_FLASH_RECEIVE(args_1, args_2) FuncSPI1Receive(args_1, args_2)
-#define FUNC_FLASH_NSS_READY(args) FuncSPI1NSSReady(args)
-#define FUNC_FLASH_NSS_QUIT(args) FuncSPI1NSSQuit(args)
-
-void InitializeFLASH(void);
-void FuncFLASHCommand(Type_Commd_FLASH m_commd_flash);
-uint32_t FuncFLASHCallbackID(void);
-void FuncFLASHWriteEnable(void);
-void FuncFLASHEraseForSectorSingle(uint32_t m_target_mem_ptr);
-void FuncFLASHEraseForSector(uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
-void FuncFLASHWriteForPage(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
-void FuncFLASHWrite(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
-void FuncFLASHRead(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_read);
-void FuncFLASHWaitForWrite(void);
-void FuncFLASHWaitForRead(void);
-
-#endif /*H_WHX_COMMUNICATE_SPI_*/
+void InitializeFLASH1(void);
+void InitializeFLASH1ForPin(void);
+void InitializeFLASH1ForProtocol(void);
+void FuncFLASH1Command(Type_Commd_FLASH m_commd_flash);
+uint32_t FuncFLASH1CallbackID(void);
+void FuncFLASH1WriteEnable(void);
+void FuncFLASH1EraseForSectorSingle(uint32_t m_target_mem_ptr);
+void FuncFLASH1EraseForSector(uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
+void FuncFLASH1WriteForPage(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
+void FuncFLASH1Write(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
+void FuncFLASH1Read(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_read);
+void FuncFLASH1WaitForWrite(void);
+void FuncFLASH1WaitForRead(void);
 /*********************************FLASH功能************************************/
 
 /**
@@ -482,22 +532,18 @@ void FuncLCDDrawStrForASCII(uint16_t m_point_x, uint16_t m_point_y, char *m_str,
 /**
  * @description: ADC端口配置
  */
-#define PORT_ADC1_1_GROUP GPIOA
+#define PORT_ADC1_1_GROUP GPIOC
 #define PORT_ADC1_1_PIN GPIO_PIN_1
-#define PORT_ADC1_1_CHANNEL ADC_CHANNEL_1 /*通道和引脚具有对应关系,根据ADCx的不同有些变化*/
-
-#define PORT_ADC1_2_GROUP GPIOC
-#define PORT_ADC1_2_PIN GPIO_PIN_1
-#define PORT_ADC1_2_CHANNEL ADC_CHANNEL_11
+#define PORT_ADC1_1_CHANNEL ADC_CHANNEL_11 /*通道和引脚具有对应关系,根据ADCx的不同有些变化*/
 
 #define PORT_ADC1_DMACHANNEL DMA1_Channel1 /*ADC1占据DMA1的通道1，是固定的*/
 
-#define FUNC_ADC1_PIN_ALL_CLK_ENABLE(args) \
-    do                                     \
-    {                                      \
-        __HAL_RCC_GPIOA_CLK_ENABLE();      \
-        __HAL_RCC_GPIOC_CLK_ENABLE();      \
-        __HAL_RCC_ADC1_CLK_ENABLE();       \
+#define FUNC_ADC1_PIN_CLK_ENABLE(args) \
+    do                                 \
+    {                                  \
+        __HAL_RCC_GPIOA_CLK_ENABLE();  \
+        __HAL_RCC_GPIOC_CLK_ENABLE();  \
+        __HAL_RCC_ADC1_CLK_ENABLE();   \
     } while (0U);
 
 #define STATUS_ADC1_INPUTVOLTAGE ((float)3.3)       /*ADC输入电压范围，由由VREF-、VREF+、VDDA、VSSA、这四个外部引脚决定*/
@@ -519,7 +565,7 @@ extern uint16_t V_data_adc1_array[7]; /*ADC有最多16个通道，但DMA1只有7
 #define CONFIG_ADC1_DATAALIGN ADC_DATAALIGN_RIGHT       /*左/右对齐*/
 #define CONFIG_ADC1_SCANCONVMODE ENABLE                 /*多通道/单通道模式*/
 #define CONFIG_ADC1_CONTINUOUSCONVMODE ENABLE           /*使能连续转换*/
-#define CONFIG_ADC1_NBROFCONVERSION 2                   /*连续转换通道数*/
+#define CONFIG_ADC1_NBROFCONVERSION 1                   /*连续转换通道数*/
 #define CONFIG_ADC1_NBROFDISCCONVERSION 0               /*不连续转换通道数*/
 #define CONFIG_ADC1_DISCONTINUOUSCONVMODE DISABLE       /*使能不连续转换*/
 #define CONFIG_ADC1_EXTERNALTRIGCONV ADC_SOFTWARE_START /*转换触发信号选择*/
@@ -531,20 +577,69 @@ float FuncADC1GetVoltage(uint32_t m_adc_channel);
 /*********************************ADC功能************************************/
 
 /**
+ * @description: 电容按键端口配置
+ */
+#define PORT_CAPACITIVEBUTTON_1_GROUP GPIOA
+#define PORT_CAPACITIVEBUTTON_1_PIN GPIO_PIN_1
+
+#define FUNC_CAPACITIVEBUTTON_PIN_CLK_ENABLE(args) \
+    do                                             \
+    {                                              \
+        __HAL_RCC_GPIOA_CLK_ENABLE();              \
+    } while (0U);
+
+typedef enum
+{
+    STATUS_CAPACITIVEBUTTON_ON = GPIO_PIN_RESET,
+    STATUS_CAPACITIVEBUTTON_OFF = GPIO_PIN_SET
+} Type_Status_CapacitiveButton;
+
+extern uint16_t V_data_capacitivebutton_threshold; /*电容按键脉冲阈值*/
+
+void InitializeCapacitiveButton(void);
+void InitializeCapacitiveButtonForGpio(void);
+void InitializeCapacitiveButtonForProtocol(void);
+void FuncCapacitiveButtonReset(void);
+uint16_t FuncCapacitiveButtonReadPulseWidth(void);
+void FuncCapacitiveButtonSetThreshold(uint16_t m_threshold);
+Type_Status_CapacitiveButton FuncCapacitiveButtonStatusRead(void);
+/*********************************电容按键端口配置************************************/
+
+/**
  * @description: Others
  */
-#define FUNC_CHECK_INIT(m_func, m_info) \
-    do                                  \
-    {                                   \
-        if (m_func != HAL_OK)           \
-        {                               \
-            printf(m_info);             \
-            printf("\n");               \
-            FuncErrorAlertLEDBEEP();    \
-        }                               \
+#define FUNC_CHECK_FOR_HAL(m_func, m_info) \
+    do                                     \
+    {                                      \
+        if (m_func != HAL_OK)              \
+        {                                  \
+            printf(m_info);                \
+            printf("\n");                  \
+            FuncErrorAlert();              \
+        }                                  \
     } while (0U);
-void FuncErrorAlertLEDBEEP(void);
+
+#define FUNC_WAITSTATUS_TIMEOUT(m_func, m_status_wait, m_timeout_ms, m_info) \
+    do                                                                       \
+    {                                                                        \
+        uint32_t timeout = m_timeout_ms * (SystemCoreClock / 1000);          \
+        while (m_func != m_status_wait)                                      \
+        {                                                                    \
+            if (!timeout--)                                                  \
+            {                                                                \
+                printf(m_info);                                              \
+                printf("\n");                                                \
+                FuncErrorAlert();                                            \
+            }                                                                \
+        }                                                                    \
+    } while (0U);
+void FuncErrorAlert(void);
 void FuncDelayMicrosecondsForAll(uint32_t us);
 /*********************************Others************************************/
+
+/**
+ * @description: END
+ */
+/*********************************END************************************/
 
 #endif /*H_WHX_PERIPHERALS_*/

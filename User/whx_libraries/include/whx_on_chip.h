@@ -2,6 +2,7 @@
 #define H_WHX_ON_CHIP_
 
 #include "whx_libraries_all.h"
+#include "whx_peripherals.h"
 
 /**
  * @description: FSMC端口配置
@@ -83,7 +84,7 @@
         __HAL_RCC_GPIOE_CLK_ENABLE();      \
         __HAL_RCC_GPIOF_CLK_ENABLE();      \
         __HAL_RCC_GPIOG_CLK_ENABLE();      \
-    } while (0U)
+    } while (0U);
 #define FUNC_FSMC_CLK_ENABLE(args) __HAL_RCC_FSMC_CLK_ENABLE()
 #define FUNC_FSMC_CLK_DISABLE(args) __HAL_RCC_FSMC_CLK_DISABLE()
 /*********************************FSMC端口配置************************************/
@@ -185,33 +186,38 @@ void InitializeDMA1ForProtocol(void);
 #define FUNC_TIM6BASE_CLK_DISABLE(args) __HAL_RCC_TIM6_CLK_DISABLE()
 
 /*高级定时器*/
-#define PORT_TIM1ADVANCE_OC_PWM1_PORT GPIOC     /*PWM输出引脚*/
-#define PORT_TIM1ADVANCE_OC_PWM1_PIN GPIO_PIN_6 /*PWM输出引脚*/
+#define PORT_TIM1ADVANCE_OC_GROUP GPIOC    /*PWM输出引脚*/
+#define PORT_TIM1ADVANCE_OC_PIN GPIO_PIN_6 /*PWM输出引脚*/
 
-#define PORT_TIM1ADVANCE_OCN_PWM1_PORT GPIOA     /*PWM互补输出引脚*/
-#define PORT_TIM1ADVANCE_OCN_PWM1_PIN GPIO_PIN_5 /*PWM互补输出引脚*/
+#define PORT_TIM1ADVANCE_OCN_GROUP GPIOA    /*PWM互补输出引脚*/
+#define PORT_TIM1ADVANCE_OCN_PIN GPIO_PIN_5 /*PWM互补输出引脚*/
 
-#define PORT_TIM1ADVANCE_CHANNEL TIM_CHANNEL_1 /*TIM输出通道选择，共有4个，前3个有对应的互补通道，与IO相对应*/
+#define PORT_TIM1ADVANCE_CHANNEL_1 TIM_CHANNEL_1 /*TIM输出通道选择，共有4个，前3个有对应的互补通道，与IO相对应*/
+#define PORT_TIM1ADVANCE_CHANNEL_2 TIM_CHANNEL_2 /*TIM输出通道选择，共有4个，前3个有对应的互补通道，与IO相对应*/
 
-#define FUNC_TIM1ADVANCE_PIN_ALL_CLK_ENABLE(args) \
-    do                                            \
-    {                                             \
-        __HAL_RCC_GPIOA_CLK_ENABLE();             \
-        __HAL_RCC_GPIOC_CLK_ENABLE();             \
-    } while (0U)
+#define FUNC_TIM1ADVANCE_PIN_CLK_ENABLE(args) \
+    do                                        \
+    {                                         \
+        __HAL_RCC_GPIOA_CLK_ENABLE();         \
+        __HAL_RCC_GPIOC_CLK_ENABLE();         \
+    } while (0U);
 #define FUNC_TIM1ADVANCE_CLK_ENABLE(args) __HAL_RCC_TIM1_CLK_ENABLE()
 #define FUNC_TIM1ADVANCE_CLK_DISABLE(args) __HAL_RCC_TIM1_CLK_DISABLE()
 
-#define PORT_TIM5GENERAL_IC_PWM1_PORT GPIOA     /*PWM输出引脚*/
-#define PORT_TIM5GENERAL_IC_PWM1_PIN GPIO_PIN_0 /*PWM输出引脚*/
+#define PORT_TIM5GENERAL_IC_CH1_GROUP PORT_KEY_1_GROUP              /*脉冲宽度捕获引脚*/
+#define PORT_TIM5GENERAL_IC_CH1_PIN PORT_KEY_1_PIN                  /*脉冲宽度捕获引脚*/
+#define PORT_TIM5GENERAL_IC_CH2_GROUP PORT_CAPACITIVEBUTTON_1_GROUP /*脉冲宽度捕获引脚*/
+#define PORT_TIM5GENERAL_IC_CH2_PIN PORT_CAPACITIVEBUTTON_1_PIN     /*脉冲宽度捕获引脚*/
 
-#define PORT_TIM5GENERAL_CHANNEL TIM_CHANNEL_1 /*TIM捕获通道选择，共有4个，与IO相对应*/
+#define PORT_TIM5GENERAL_CHANNEL_1 TIM_CHANNEL_1 /*TIM捕获通道选择，共有4个，与IO相对应*/
+#define PORT_TIM5GENERAL_CHANNEL_2 TIM_CHANNEL_2 /*TIM捕获通道选择，共有4个，与IO相对应*/
 
-#define FUNC_TIM5GENERAL_PIN_ALL_CLK_ENABLE(args) \
-    do                                            \
-    {                                             \
-        __HAL_RCC_GPIOA_CLK_ENABLE();             \
-    } while (0U)
+#define FUNC_TIM5GENERAL_PIN_CLK_ENABLE(args)   \
+    do                                          \
+    {                                           \
+        FUNC_KEY_1_PIN_CLK_ENABLE();                \
+        FUNC_CAPACITIVEBUTTON_PIN_CLK_ENABLE(); \
+    } while (0U);
 #define FUNC_TIM5GENERAL_CLK_ENABLE(args) __HAL_RCC_TIM5_CLK_ENABLE()
 #define FUNC_TIM5GENERAL_CLK_DISABLE(args) __HAL_RCC_TIM5_CLK_DISABLE()
 /*********************************TIM端口配置************************************/
@@ -232,7 +238,7 @@ extern TIM_HandleTypeDef V_config_tim6base;
 #define CONFIG_TIM6_MASTER_OUTPUTTRIGGER TIM_TRGO_RESET          /*TIM 主模式选择(触发输出)*/
 #define CONFIG_TIM6_MASTER_SLAVEMODE TIM_MASTERSLAVEMODE_DISABLE /*TIM主/从模式*/
 
-extern TIM_HandleTypeDef V_config_tim5general;
+extern TIM_HandleTypeDef V_config_tim1advance;
 
 /*高级定时器--基本部分*/
 #define CONFIG_TIM1_BASE_PRESCALER (72 - 1)                   /*定时器预分频，实际时钟频率是72M/(CONFIG_TIM1BASE_PRESCALER + 1)*/
@@ -285,7 +291,7 @@ extern TIM_HandleTypeDef V_config_tim5general;
 #define CONFIG_TIM5_BASE_COUNTERMODE TIM_COUNTERMODE_UP       /*向上/向下计数，Base只有向上*/
 #define CONFIG_TIM5_BASE_PERIOD (1000 - 1)                    /*定时器周期，即计数到多少产生对应事件和中断*/
 #define CONFIG_TIM5_BASE_CLOCKDIVISION TIM_CLOCKDIVISION_DIV1 /*时钟分频，设置定时器时钟CK_INT频率与数字滤波器采样时钟频率分频比，Base无效*/
-#define CONFIG_TIM5_BASE_REPETIONCOUNTER 0                    /*重复计数器，属于高级控制寄存器专用寄存器位，利用它可以非常容易控制输出PWM的个数*/
+#define CONFIG_TIM5_BASE_REPETIONCOUNTER NULL                 /*重复计数器，属于高级控制寄存器专用寄存器位，利用它可以非常容易控制输出PWM的个数*/
 
 #define CONFIG_TIM5_CLOCK_CLOCKSOURCE TIM_CLOCKSOURCE_INTERNAL /*时钟源*/
 #define CONFIG_TIM5_CLOCK_CLOCKPOLARITY NULL                   /*时钟极性*/
@@ -326,13 +332,14 @@ extern TIM_HandleTypeDef V_config_tim5general;
 
 typedef struct
 {
-    uint8_t flag_finish;    /*捕获结束标志位*/
-    uint8_t flag_start;     /*捕获开始标志位*/
-    uint16_t data_register; /*捕获寄存器当前值*/
-    uint16_t data_period;   /*寄存器更新次数*/
+    volatile uint8_t flag_start;     /*捕获开始标志位*/
+    volatile uint16_t data_register; /*捕获寄存器当前值*/
+    volatile uint16_t data_period;   /*寄存器更新次数*/
+    volatile uint32_t data_result;   /*脉冲宽度捕获结果*/
 } Type_Status_TIM_IC;
 
-extern Type_Status_TIM_IC V_data_tim_ic;
+extern Type_Status_TIM_IC V_data_tim5general_ic_ch1;
+extern Type_Status_TIM_IC V_data_tim5general_ic_ch2;
 
 void InitializeTIM6Base(void);
 void InitializeTIM6BaseForGPIO(void);
@@ -348,6 +355,7 @@ void FuncTIM1AdvancePWMChangePulse(uint16_t m_pulse_ms);
 void InitializeTIM5General(void);
 void InitializeTIM5GeneralForGPIO(void);
 void InitializeTIM5GeneralForProtocol(void);
+uint32_t FuncTIM5GeneralGetICValue(uint32_t m_channel);
 /*********************************TIM功能************************************/
 
 /**

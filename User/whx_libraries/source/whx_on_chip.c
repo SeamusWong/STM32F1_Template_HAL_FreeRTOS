@@ -98,7 +98,7 @@ void InitializeFSMCNORSRAMForProtocol(void)
     V_config_fsmc_nosram_timing_write.CLKDivision = CONFIG_FSMC_NORSRAM_TIMING_WRITE_CLKDIVISION;
     V_config_fsmc_nosram_timing_write.DataLatency = CONFIG_FSMC_NORSRAM_TIMING_WRITE_DATALATENCY;
     V_config_fsmc_nosram_timing_write.AccessMode = CONFIG_FSMC_NORSRAM_TIMING_WRITE_ACCESSMODE;
-    FUNC_CHECK_INIT(HAL_SRAM_Init(&V_config_sram, &V_config_fsmc_nosram_timing_read, &V_config_fsmc_nosram_timing_write), "ERROR SRAM_Init");
+    FUNC_CHECK_FOR_HAL(HAL_SRAM_Init(&V_config_sram, &V_config_fsmc_nosram_timing_read, &V_config_fsmc_nosram_timing_write), "ERROR SRAM_Init");
 }
 
 void FuncFSMCCommand(__IO uint16_t m_command_fsmc)
@@ -145,7 +145,7 @@ void InitializeDMA1ForProtocol(void)
     V_config_dma1.Init.MemDataAlignment = CONFIG_DMA1_MEMDATAALIGNMENT;
     V_config_dma1.Init.Mode = CONFIG_DMA1_MODE;
     V_config_dma1.Init.Priority = CONFIG_DMA1_PRIORITY;
-    FUNC_CHECK_INIT(HAL_DMA_Init(&V_config_dma1), "ERROR DMA_Init");
+    FUNC_CHECK_FOR_HAL(HAL_DMA_Init(&V_config_dma1), "ERROR DMA_Init");
 }
 
 /**
@@ -172,17 +172,16 @@ void InitializeTIM6BaseForProtocol(void)
     V_config_tim6base.Init.Prescaler = CONFIG_TIM6_BASE_PRESCALER;
     V_config_tim6base.Init.CounterMode = CONFIG_TIM6_BASE_COUNTERMODE;
     V_config_tim6base.Init.Period = CONFIG_TIM6_BASE_PERIOD;
-    FUNC_CHECK_INIT(HAL_TIM_Base_Init(&V_config_tim6base), "ERROR TIM6_Init_Base");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_Base_Init(&V_config_tim6base), "ERROR TIM6_Init_Base");
 
     TIM_MasterConfigTypeDef config_tim6base_master;
     config_tim6base_master.MasterOutputTrigger = CONFIG_TIM6_MASTER_OUTPUTTRIGGER;
     config_tim6base_master.MasterSlaveMode = CONFIG_TIM6_MASTER_SLAVEMODE;
-    FUNC_CHECK_INIT(HAL_TIMEx_MasterConfigSynchronization(&V_config_tim6base, &config_tim6base_master), "ERROR TIM6_Init");
+    FUNC_CHECK_FOR_HAL(HAL_TIMEx_MasterConfigSynchronization(&V_config_tim6base, &config_tim6base_master), "ERROR TIM6_Init");
 }
 
 /*高级定时器*/
-TIM_HandleTypeDef V_config_tim5general;
-Type_Status_TIM_IC V_data_tim_ic = {0, 0, 0, 0};
+TIM_HandleTypeDef V_config_tim1advance;
 
 void InitializeTIM1Advance(void)
 {
@@ -193,39 +192,39 @@ void InitializeTIM1Advance(void)
 
 void InitializeTIM1AdvanceForGPIO(void)
 {
-    FUNC_TIM1ADVANCE_PIN_ALL_CLK_ENABLE();
+    FUNC_TIM1ADVANCE_PIN_CLK_ENABLE();
     GPIO_InitTypeDef config_tim1advance_gpio;
 
     config_tim1advance_gpio.Mode = GPIO_MODE_AF_PP;
     config_tim1advance_gpio.Pull = GPIO_NOPULL;
     config_tim1advance_gpio.Speed = GPIO_SPEED_FREQ_HIGH;
 
-    config_tim1advance_gpio.Pin = PORT_TIM1ADVANCE_OC_PWM1_PIN;
-    HAL_GPIO_Init(PORT_TIM1ADVANCE_OC_PWM1_PORT, &config_tim1advance_gpio);
-    config_tim1advance_gpio.Pin = PORT_TIM1ADVANCE_OCN_PWM1_PIN;
-    HAL_GPIO_Init(PORT_TIM1ADVANCE_OCN_PWM1_PORT, &config_tim1advance_gpio);
+    config_tim1advance_gpio.Pin = PORT_TIM1ADVANCE_OC_PIN;
+    HAL_GPIO_Init(PORT_TIM1ADVANCE_OC_GROUP, &config_tim1advance_gpio);
+    config_tim1advance_gpio.Pin = PORT_TIM1ADVANCE_OCN_PIN;
+    HAL_GPIO_Init(PORT_TIM1ADVANCE_OCN_GROUP, &config_tim1advance_gpio);
 }
 
 void InitializeTIM1AdvanceForProtocol(void)
 {
     FUNC_TIM1ADVANCE_CLK_ENABLE();
 
-    V_config_tim5general.Instance = TIM1;
-    V_config_tim5general.Init.Prescaler = CONFIG_TIM1_BASE_PRESCALER;
-    V_config_tim5general.Init.CounterMode = CONFIG_TIM1_BASE_COUNTERMODE;
-    V_config_tim5general.Init.Period = CONFIG_TIM1_BASE_PERIOD;
-    V_config_tim5general.Init.RepetitionCounter = CONFIG_TIM1_BASE_REPETIONCOUNTER;
-    V_config_tim5general.Init.ClockDivision = CONFIG_TIM1_BASE_CLOCKDIVISION;
-    FUNC_CHECK_INIT(HAL_TIM_Base_Init(&V_config_tim5general), "ERROR TIM1_Init_Base");
+    V_config_tim1advance.Instance = TIM1;
+    V_config_tim1advance.Init.Prescaler = CONFIG_TIM1_BASE_PRESCALER;
+    V_config_tim1advance.Init.CounterMode = CONFIG_TIM1_BASE_COUNTERMODE;
+    V_config_tim1advance.Init.Period = CONFIG_TIM1_BASE_PERIOD;
+    V_config_tim1advance.Init.RepetitionCounter = CONFIG_TIM1_BASE_REPETIONCOUNTER;
+    V_config_tim1advance.Init.ClockDivision = CONFIG_TIM1_BASE_CLOCKDIVISION;
+    FUNC_CHECK_FOR_HAL(HAL_TIM_Base_Init(&V_config_tim1advance), "ERROR TIM1_Init_Base");
 
     TIM_ClockConfigTypeDef config_tim1advance_clock;
     config_tim1advance_clock.ClockSource = CONFIG_TIM1_CLOCK_CLOCKSOURCE;
-    FUNC_CHECK_INIT(HAL_TIM_ConfigClockSource(&V_config_tim5general, &config_tim1advance_clock), "ERROR TIM1_Init_Clock");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_ConfigClockSource(&V_config_tim1advance, &config_tim1advance_clock), "ERROR TIM1_Init_Clock");
 
     TIM_MasterConfigTypeDef config_tim1advance_master;
     config_tim1advance_master.MasterOutputTrigger = CONFIG_TIM1_MASTER_OUTPUTTRIGGER;
     config_tim1advance_master.MasterSlaveMode = CONFIG_TIM1_MASTER_SLAVEMODE;
-    FUNC_CHECK_INIT(HAL_TIMEx_MasterConfigSynchronization(&V_config_tim5general, &config_tim1advance_master), "ERROR TIM1_Init_Master");
+    FUNC_CHECK_FOR_HAL(HAL_TIMEx_MasterConfigSynchronization(&V_config_tim1advance, &config_tim1advance_master), "ERROR TIM1_Init_Master");
 
     TIM_BreakDeadTimeConfigTypeDef config_tim1advance_bdt;
     config_tim1advance_bdt.AutomaticOutput = CONFIG_TIM1_BDT_AUTOMATICOUTPUT;
@@ -236,7 +235,7 @@ void InitializeTIM1AdvanceForProtocol(void)
     config_tim1advance_bdt.LockLevel = CONFIG_TIM1_BDT_LOCKLEVEL;
     config_tim1advance_bdt.OffStateIDLEMode = CONFIG_TIM1_BDT_OFFSTATEIDLEMODE;
     config_tim1advance_bdt.OffStateRunMode = CONFIG_TIM1_BDT_OFFSTATERUNMODE;
-    FUNC_CHECK_INIT(HAL_TIMEx_ConfigBreakDeadTime(&V_config_tim5general, &config_tim1advance_bdt), "ERROR TIM1_Init_BreakDeadTime");
+    FUNC_CHECK_FOR_HAL(HAL_TIMEx_ConfigBreakDeadTime(&V_config_tim1advance, &config_tim1advance_bdt), "ERROR TIM1_Init_BreakDeadTime");
 
     TIM_OC_InitTypeDef config_tim1advance_oc;
     config_tim1advance_oc.OCMode = CONFIG_TIM1_OC_OCMODE;
@@ -245,19 +244,19 @@ void InitializeTIM1AdvanceForProtocol(void)
     config_tim1advance_oc.OCNPolarity = CONFIG_TIM1_OC_OCNPOLARITY;
     config_tim1advance_oc.OCPolarity = CONFIG_TIM1_OC_OCPOLARITY;
     config_tim1advance_oc.Pulse = CONFIG_TIM1_OC_PULSE;
-    FUNC_CHECK_INIT(HAL_TIM_PWM_ConfigChannel(&V_config_tim5general, &config_tim1advance_oc, PORT_TIM1ADVANCE_CHANNEL), "ERROR TIM1_Init_OC");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_PWM_ConfigChannel(&V_config_tim1advance, &config_tim1advance_oc, PORT_TIM1ADVANCE_CHANNEL_1), "ERROR TIM1_Init_OC");
 }
 
 void FuncTIM1AdvancePWMStart(void)
 {
-    HAL_TIM_PWM_Start(&V_config_tim5general, PORT_TIM1ADVANCE_CHANNEL);
-    HAL_TIMEx_PWMN_Start(&V_config_tim5general, PORT_TIM1ADVANCE_CHANNEL);
+    HAL_TIM_PWM_Start(&V_config_tim1advance, PORT_TIM1ADVANCE_CHANNEL_1);
+    HAL_TIMEx_PWMN_Start(&V_config_tim1advance, PORT_TIM1ADVANCE_CHANNEL_1);
 }
 
 void FuncTIM1AdvancePWMStop(void)
 {
-    HAL_TIM_PWM_Stop(&V_config_tim5general, PORT_TIM1ADVANCE_CHANNEL);
-    HAL_TIMEx_PWMN_Stop(&V_config_tim5general, PORT_TIM1ADVANCE_CHANNEL);
+    HAL_TIM_PWM_Stop(&V_config_tim1advance, PORT_TIM1ADVANCE_CHANNEL_1);
+    HAL_TIMEx_PWMN_Stop(&V_config_tim1advance, PORT_TIM1ADVANCE_CHANNEL_1);
 }
 
 void FuncTIM1AdvancePWMChangePulse(uint16_t m_pulse_ms)
@@ -267,9 +266,13 @@ void FuncTIM1AdvancePWMChangePulse(uint16_t m_pulse_ms)
 
     TIM_OC_InitTypeDef config_tim1advance_oc;
     config_tim1advance_oc.Pulse = pulse;
-    FUNC_CHECK_INIT(HAL_TIM_PWM_ConfigChannel(&V_config_tim5general, &config_tim1advance_oc, PORT_TIM1ADVANCE_CHANNEL), "ERROR TIM1_PWMChangePulse");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_PWM_ConfigChannel(&V_config_tim1advance, &config_tim1advance_oc, PORT_TIM1ADVANCE_CHANNEL_1), "ERROR TIM1_PWMChangePulse");
     FuncTIM1AdvancePWMStart();
 }
+
+TIM_HandleTypeDef V_config_tim5general;
+Type_Status_TIM_IC V_data_tim5general_ic_ch1 = {0, 0, 0, 0};
+Type_Status_TIM_IC V_data_tim5general_ic_ch2 = {0, 0, 0, 0};
 
 void InitializeTIM5General(void)
 {
@@ -279,7 +282,7 @@ void InitializeTIM5General(void)
 
 void InitializeTIM5GeneralForGPIO(void)
 {
-    FUNC_TIM5GENERAL_PIN_ALL_CLK_ENABLE();
+    FUNC_TIM5GENERAL_PIN_CLK_ENABLE();
 
     GPIO_InitTypeDef config_tim5general_gpio;
 
@@ -287,35 +290,56 @@ void InitializeTIM5GeneralForGPIO(void)
     config_tim5general_gpio.Pull = GPIO_PULLDOWN;
     config_tim5general_gpio.Speed = GPIO_SPEED_FREQ_HIGH;
 
-    config_tim5general_gpio.Pin = PORT_TIM5GENERAL_IC_PWM1_PIN;
-    HAL_GPIO_Init(PORT_TIM5GENERAL_IC_PWM1_PORT, &config_tim5general_gpio);
+    config_tim5general_gpio.Pin = PORT_TIM5GENERAL_IC_CH1_PIN;
+    HAL_GPIO_Init(PORT_TIM5GENERAL_IC_CH1_GROUP, &config_tim5general_gpio);
+    config_tim5general_gpio.Pin = PORT_TIM5GENERAL_IC_CH2_PIN;
+    HAL_GPIO_Init(PORT_TIM5GENERAL_IC_CH2_GROUP, &config_tim5general_gpio);
 }
 
 void InitializeTIM5GeneralForProtocol(void)
 {
-    FUNC_TIM1ADVANCE_CLK_ENABLE();
+    FUNC_TIM5GENERAL_CLK_ENABLE();
 
-    V_config_tim5general.Instance = TIM1;
+    V_config_tim5general.Instance = TIM5;
     V_config_tim5general.Init.Prescaler = CONFIG_TIM5_BASE_PRESCALER;
     V_config_tim5general.Init.CounterMode = CONFIG_TIM5_BASE_COUNTERMODE;
     V_config_tim5general.Init.Period = CONFIG_TIM5_BASE_PERIOD;
-    V_config_tim5general.Init.RepetitionCounter = CONFIG_TIM5_BASE_REPETIONCOUNTER;
     V_config_tim5general.Init.ClockDivision = CONFIG_TIM5_BASE_CLOCKDIVISION;
-    FUNC_CHECK_INIT(HAL_TIM_Base_Init(&V_config_tim5general), "ERROR TIM5_Init_Base");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_Base_Init(&V_config_tim5general), "ERROR TIM5_Init_Base");
 
     TIM_ClockConfigTypeDef config_tim5general_clock;
     config_tim5general_clock.ClockSource = CONFIG_TIM5_CLOCK_CLOCKSOURCE;
-    FUNC_CHECK_INIT(HAL_TIM_ConfigClockSource(&V_config_tim5general, &config_tim5general_clock), "ERROR TIM5_Init_Clock");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_ConfigClockSource(&V_config_tim5general, &config_tim5general_clock), "ERROR TIM5_Init_Clock");
 
     TIM_MasterConfigTypeDef config_tim5general_master;
     config_tim5general_master.MasterOutputTrigger = CONFIG_TIM5_MASTER_OUTPUTTRIGGER;
     config_tim5general_master.MasterSlaveMode = CONFIG_TIM5_MASTER_SLAVEMODE;
-    FUNC_CHECK_INIT(HAL_TIMEx_MasterConfigSynchronization(&V_config_tim5general, &config_tim5general_master), "ERROR TIM5_Init_Master");
+    FUNC_CHECK_FOR_HAL(HAL_TIMEx_MasterConfigSynchronization(&V_config_tim5general, &config_tim5general_master), "ERROR TIM5_Init_Master");
 
     TIM_IC_InitTypeDef config_tim5general_ic;
     config_tim5general_ic.ICFilter = CONFIG_TIM5_IC_ICFILTER;
     config_tim5general_ic.ICPolarity = CONFIG_TIM5_IC_ICPOLARITY;
     config_tim5general_ic.ICPrescaler = CONFIG_TIM5_IC_ICPRESCALER;
     config_tim5general_ic.ICSelection = CONFIG_TIM5_IC_ICSELECTION;
-    FUNC_CHECK_INIT(HAL_TIM_IC_ConfigChannel(&V_config_tim5general, &config_tim5general_ic, PORT_TIM5GENERAL_CHANNEL), "ERROR TIM5_Init_IC");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_IC_ConfigChannel(&V_config_tim5general, &config_tim5general_ic, PORT_TIM5GENERAL_CHANNEL_1), "ERROR TIM5_Init_IC_Ch1");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_IC_ConfigChannel(&V_config_tim5general, &config_tim5general_ic, PORT_TIM5GENERAL_CHANNEL_2), "ERROR TIM5_Init_IC_Ch2");
+}
+
+uint32_t FuncTIM5GeneralGetICValue(uint32_t m_channel)
+{
+    uint32_t result = 0;
+    switch (m_channel)
+    {
+    case PORT_TIM5GENERAL_CHANNEL_1:
+        result = V_data_tim5general_ic_ch1.data_result;
+        break;
+
+    case PORT_TIM5GENERAL_CHANNEL_2:
+        result = V_data_tim5general_ic_ch2.data_result;
+        break;
+
+    default:
+        break;
+    }
+    return result;
 }
