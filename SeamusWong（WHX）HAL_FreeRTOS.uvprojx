@@ -17,8 +17,8 @@
         <TargetCommonOption>
           <Device>STM32F103ZE</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F1xx_DFP.2.4.1</PackID>
-          <PackURL>https://www.keil.com/pack/</PackURL>
+          <PackID>Keil.STM32F1xx_DFP.2.4.0</PackID>
+          <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00010000) IROM(0x08000000,0x00080000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -461,6 +461,9 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>FatFs</GroupName>
+        </Group>
+        <Group>
           <GroupName>HAL</GroupName>
           <Files>
             <File>
@@ -779,11 +782,6 @@
               <FilePath>.\User\stm32f1xx_hal_conf.h</FilePath>
             </File>
             <File>
-              <FileName>task_functions.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\task_functions.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f1xx_it.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\stm32f1xx_it.c</FilePath>
@@ -799,21 +797,6 @@
               <FilePath>.\User\whx_libraries\source\whx_interrupts.c</FilePath>
             </File>
             <File>
-              <FileName>whx_communicate_usart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\whx_libraries\source\whx_communicate_usart.c</FilePath>
-            </File>
-            <File>
-              <FileName>whx_communicate_i2c.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\whx_libraries\source\whx_communicate_i2c.c</FilePath>
-            </File>
-            <File>
-              <FileName>whx_communicate_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\whx_libraries\source\whx_communicate_spi.c</FilePath>
-            </File>
-            <File>
               <FileName>whx_on_chip.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\whx_libraries\source\whx_on_chip.c</FilePath>
@@ -822,6 +805,16 @@
               <FileName>GB2312_Font.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\GB2312_Font.c</FilePath>
+            </File>
+            <File>
+              <FileName>whx_communicate.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\whx_libraries\source\whx_communicate.c</FilePath>
+            </File>
+            <File>
+              <FileName>whx_tasks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\whx_tasks.c</FilePath>
             </File>
           </Files>
         </Group>
