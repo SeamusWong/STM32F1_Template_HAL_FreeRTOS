@@ -2,7 +2,6 @@
 #define H_WHX_COMMUNICATE_
 
 #include "whx_libraries_all.h"
-#include "whx_peripherals.h"
 #include "whx_on_chip.h"
 
 /**
@@ -37,18 +36,18 @@
         __HAL_RCC_GPIOA_CLK_DISABLE();    \
     } while (0U);
 
-#define FUNC_USART_1_CLK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
-#define FUNC_USART_1_CLK_DISABLE() __HAL_RCC_USART1_CLK_DISABLE()
+#define FUNC_USART1_CLK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
+#define FUNC_USART1_CLK_DISABLE() __HAL_RCC_USART1_CLK_DISABLE()
 /*********************************USART端口配置************************************/
 
 /**
  * @description: USART功能
  */
-extern UART_HandleTypeDef V_config_usart1;
+extern UART_HandleTypeDef V_handle_usart1;
 
 void InitializeUSART1(void);
 void InitializeUSART1ForPin(void);
-void InitializeUSART1ForProtocol(void);
+void InitializeUSART1ForConfig(void);
 int32_t fputc(int32_t m_char, FILE *m_stream);
 int32_t fgetc(FILE *m_stream);
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *m_handle);
@@ -95,11 +94,11 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *m_handle);
 /**
  * @description: I2C功能
  */
-extern I2C_HandleTypeDef V_config_iic1;
+extern I2C_HandleTypeDef V_handle_iic1;
 
 void InitializeIIC1(void);
 void InitializeIIC1ForPin(void);
-void InitializeIIC1ForProtocol(void);
+void InitializeIIC1ForConfig(void);
 void FuncIIC1WaitForReady(uint16_t m_target_address);
 void FuncIIC1Transmit(uint16_t m_target_address,uint8_t *m_buffer_ptr, uint16_t m_num_to_write);
 void FuncIIC1Receive(uint16_t m_target_address,uint8_t *m_buffer_ptr, uint16_t m_num_to_read);
@@ -168,11 +167,11 @@ void FuncIIC1ReadForMemory(uint16_t m_target_address,uint8_t *m_buffer_ptr, uint
 /**
  * @description: SPI功能
  */
-extern SPI_HandleTypeDef V_config_spi1;
+extern SPI_HandleTypeDef V_handle_spi1;
 
 void InitializeSPI1(void);
 void InitializeSPI1ForPin(void);
-void InitializeSPI1ForProtocol(void);
+void InitializeSPI1ForConfig(void);
 void FuncSPI1NSSReady(GPIO_TypeDef *m_gpio_group, uint16_t m_gpio_pin);
 void FuncSPI1NSSQuit(GPIO_TypeDef *m_gpio_group, uint16_t m_gpio_pin);
 /**

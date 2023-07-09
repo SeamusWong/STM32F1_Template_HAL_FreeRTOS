@@ -50,7 +50,7 @@ void USART1_IRQHandler(void);
 /**
  * @description: UART中断功能
  */
-extern UART_HandleTypeDef V_config_usart1;
+extern UART_HandleTypeDef V_handle_usart1;
 
 void InitializeInterruptForUSART(uint32_t m_priority_preempt, uint32_t m_priority_sub);
 void FuncInterruptForUSARTEnable(void);
@@ -67,7 +67,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *m_config_usart_1_struct);
 /**
  * @description: ADC中断功能
  */
-extern ADC_HandleTypeDef V_config_adc1;
+extern ADC_HandleTypeDef V_handle_adc1;
 
 void InitializeInterruptForADC1(uint32_t m_priority_preempt, uint32_t m_priority_sub);
 void FuncInterruptForADC1Enable(void);
@@ -95,14 +95,14 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *m_config_adc);
  */
 
 /*基本定时器*/
-extern TIM_HandleTypeDef V_config_tim6base;
+extern TIM_HandleTypeDef V_handle_tim6base;
 
 void InitializeInterruptForTIM6Base(uint32_t m_priority_preempt, uint32_t m_priority_sub);
 void FuncInterruptForTIM6BaseEnable(void);
 void FuncInterruptForTIM6BaseDisable(void);
 
 /*高级定时器*/
-extern TIM_HandleTypeDef V_config_tim5general;
+extern TIM_HandleTypeDef V_handle_tim5general;
 
 void InitializeInterruptForTIM5General(uint32_t m_priority_preempt, uint32_t m_priority_sub);
 void FuncInterruptForTIM5GeneralEnable(void);

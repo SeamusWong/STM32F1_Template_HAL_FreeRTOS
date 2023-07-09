@@ -25,8 +25,8 @@
 #define PORT_FSMC_NOE_GROUP GPIOD    /*读信号，上升沿有效*/
 #define PORT_FSMC_NOE_PIN GPIO_PIN_4 /*读信号，上升沿有效*/
 
-#define PORT_FSMC_A23_GROUP GPIOE
-#define PORT_FSMC_A23_PIN GPIO_PIN_2
+#define PORT_FSMC_A23_GROUP GPIOE    /*DATA/COMMAND引脚*/
+#define PORT_FSMC_A23_PIN GPIO_PIN_2 /*DATA/COMMAND引脚*/
 
 #define PORT_FSMC_D0_GROUP GPIOD     /*数据信号线*/
 #define PORT_FSMC_D0_PIN GPIO_PIN_14 /*数据信号线*/
@@ -76,15 +76,23 @@
 #define PORT_FSMC_D15_GROUP GPIOD
 #define PORT_FSMC_D15_PIN GPIO_PIN_10
 
-#define FUNC_FSMC_PIN_ALL_CLK_ENABLE(args) \
-    do                                     \
-    {                                      \
-        __HAL_RCC_FSMC_CLK_ENABLE();       \
-        __HAL_RCC_GPIOD_CLK_ENABLE();      \
-        __HAL_RCC_GPIOE_CLK_ENABLE();      \
-        __HAL_RCC_GPIOF_CLK_ENABLE();      \
-        __HAL_RCC_GPIOG_CLK_ENABLE();      \
+#define FUNC_FSMC_PIN_CLK_ENABLE(args) \
+    do                                 \
+    {                                  \
+        __HAL_RCC_GPIOD_CLK_ENABLE();  \
+        __HAL_RCC_GPIOE_CLK_ENABLE();  \
+        __HAL_RCC_GPIOF_CLK_ENABLE();  \
+        __HAL_RCC_GPIOG_CLK_ENABLE();  \
     } while (0U);
+#define FUNC_FSMC_PIN_CLK_DISABLE(args) \
+    do                                  \
+    {                                   \
+        __HAL_RCC_GPIOD_CLK_DISABLE();  \
+        __HAL_RCC_GPIOE_CLK_DISABLE();  \
+        __HAL_RCC_GPIOF_CLK_DISABLE();  \
+        __HAL_RCC_GPIOG_CLK_DISABLE();  \
+    } while (0U);
+
 #define FUNC_FSMC_CLK_ENABLE(args) __HAL_RCC_FSMC_CLK_ENABLE()
 #define FUNC_FSMC_CLK_DISABLE(args) __HAL_RCC_FSMC_CLK_DISABLE()
 /*********************************FSMC端口配置************************************/
@@ -92,9 +100,9 @@
 /**
  * @description: FSMC功能
  */
-extern SRAM_HandleTypeDef V_config_sram; /*SRAM控制句柄*/
-extern FSMC_NORSRAM_TimingTypeDef V_config_fsmc_nosram_timing_read;
-extern FSMC_NORSRAM_TimingTypeDef V_config_fsmc_nosram_timing_write;
+extern SRAM_HandleTypeDef V_config_fsmc1_sram; /*SRAM控制句柄*/
+extern FSMC_NORSRAM_TimingTypeDef V_config_fsmc1_nosram_timing_read;
+extern FSMC_NORSRAM_TimingTypeDef V_config_fsmc1_nosram_timing_write;
 
 #define CONFIG_FSMC_NORSRAM_NSBANK FSMC_NORSRAM_BANK4                        /*存储区块号*/
 #define CONFIG_FSMC_NORSRAM_DATAADDRESSMUX FSMC_DATA_ADDRESS_MUX_DISABLE     /*是否启用地址/数据复用*/
@@ -108,7 +116,7 @@ extern FSMC_NORSRAM_TimingTypeDef V_config_fsmc_nosram_timing_write;
 #define CONFIG_FSMC_NORSRAM_EXTENDMODE FSMC_EXTENDED_MODE_DISABLE            /*是否使用使能扩展模式*/
 #define CONFIG_FSMC_NORSRAM_ASYNCHRONOUSWAIT FSMC_ASYNCHRONOUS_WAIT_DISABLE  /*是否使能异步传输期间的等待信号,此处未用到*/
 #define CONFIG_FSMC_NORSRAM_WRITEBURST FSMC_WRITE_BURST_DISABLE              /*是否使能异步的写突发操作*/
-#define CONFIG_FSMC_NORSRAM_PAGESIZE 256                                     /*页大小*/
+#define CONFIG_FSMC_NORSRAM_PAGESIZE NULL                                    /*页大小*/
 
 #define CONFIG_FSMC_NORSRAM_TIMING_READ_ADDRESSSETUPTIME 1            /*地址建立时间*/
 #define CONFIG_FSMC_NORSRAM_TIMING_READ_ADDRESSHOLDTIME 0             /*地址保持时间*/
@@ -145,12 +153,61 @@ RAM基地址 = 0X6D00 0000 = 0X6C00 0000+2^23*2 = 0X6C00 0000 + 0X100 0000 = 0X6
 // #define STATUS_FSMC_ADDRESS_DATA ((uint32_t)0x6D000000)  /*数据操作地址*/
 
 void InitializeFSMCNORSRAM(void);
-void InitializeFSMCNORSRAMForGPIO(void);
-void InitializeFSMCNORSRAMForProtocol(void);
+static void InitializeFSMCNORSRAMForPin(void);
+static void InitializeFSMCNORSRAMForConfig(void);
 void FuncFSMCCommand(__IO uint16_t m_commd_fsmc);
 void FuncFSMCWriteDataForSingle(__IO uint16_t m_data_fsmc);
 uint16_t FuncFSMCReadDataForSingle(void);
 /*********************************FSMC功能************************************/
+
+/**
+ * @description: ADC端口配置
+ */
+#define PORT_ADC1_CH11_GROUP GPIOC
+#define PORT_ADC1_CH11_PIN GPIO_PIN_1
+#define PORT_ADC1_CH11_CHANNEL ADC_CHANNEL_11 /*通道和引脚具有对应关系,根据ADCx的不同有些变化*/
+
+#define PORT_ADC1_DMACHANNEL DMA1_Channel1 /*ADC1占据DMA1的通道1，是固定的*/
+
+#define FUNC_ADC1_PIN_CLK_ENABLE(args) \
+    do                                 \
+    {                                  \
+        __HAL_RCC_GPIOC_CLK_ENABLE();  \
+    } while (0U);
+
+#define FUNC_ADC1_CLK_ENABLE(args) __HAL_RCC_ADC1_CLK_ENABLE()
+
+#define STATUS_ADC1_INPUTVOLTAGE ((float)3.3) /*ADC输入电压范围，由由VREF-、VREF+、VDDA、VSSA、这四个外部引脚决定*/
+
+#define STATUS_ADC1_ACCURACY ((float)(0x1UL << 12)) /*ADC精度，12位就是4096个等级*/
+/*********************************ADC端口配置************************************/
+
+/**
+ * @description: ADC功能
+ */
+extern ADC_HandleTypeDef V_handle_adc1;
+
+extern uint16_t V_data_adc1_dma_array[7]; /*ADC有最多16个通道，但DMA1只有7个*/
+
+#define CONFIG_ADC1_CLK_PERIPHCLOCKSELECTION RCC_PERIPHCLK_ADC /*ADC外设时钟*/
+#define CONFIG_ADC1_CLK_ADCCLOCKSELECTION RCC_ADCPCLK2_DIV6    /*分频因子，最终时钟是72M/因子*/
+
+#define CONFIG_ADC1_CH11_SAMPLINGTIME ADC_SAMPLETIME_55CYCLES_5 /*采样时间（ADC周期）*/
+
+#define CONFIG_ADC1_DATAALIGN ADC_DATAALIGN_RIGHT       /*左/右对齐*/
+#define CONFIG_ADC1_SCANCONVMODE ENABLE                 /*多通道/单通道模式*/
+#define CONFIG_ADC1_CONTINUOUSCONVMODE ENABLE           /*使能连续转换*/
+#define CONFIG_ADC1_NBROFCONVERSION 1                   /*连续转换通道数*/
+#define CONFIG_ADC1_NBROFDISCCONVERSION 0               /*不连续转换通道数*/
+#define CONFIG_ADC1_DISCONTINUOUSCONVMODE DISABLE       /*使能不连续转换*/
+#define CONFIG_ADC1_EXTERNALTRIGCONV ADC_SOFTWARE_START /*转换触发信号选择*/
+
+void InitializeADC1(void);
+static void InitializeADC1ForPin(void);
+static void InitializeADC1ForConfig(void);
+
+float FuncADC1GetVoltage(uint32_t m_adc_channel);
+/*********************************ADC功能************************************/
 
 /**
  * @description: DMA端口配置
@@ -162,7 +219,7 @@ uint16_t FuncFSMCReadDataForSingle(void);
 /**
  * @description: DMA功能
  */
-extern DMA_HandleTypeDef V_config_dma1;
+extern DMA_HandleTypeDef V_handle_dma1;
 
 #define CONFIG_DMA1_DIRECTION DMA_PERIPH_TO_MEMORY              /*传输方向*/
 #define CONFIG_DMA1_PERIPHINC DMA_PINC_DISABLE                  /*使能外设地址递增*/
@@ -173,8 +230,8 @@ extern DMA_HandleTypeDef V_config_dma1;
 #define CONFIG_DMA1_PRIORITY DMA_PRIORITY_MEDIUM                /*优先级*/
 
 void InitializeDMA1(void);
-void InitializeDMA1ForGPIO(void);
-void InitializeDMA1ForProtocol(void);
+static void InitializeDMA1ForPin(void);
+static void InitializeDMA1ForConfig(void);
 /*********************************DMA功能************************************/
 
 /**
@@ -201,23 +258,29 @@ void InitializeDMA1ForProtocol(void);
         __HAL_RCC_GPIOA_CLK_ENABLE();         \
         __HAL_RCC_GPIOC_CLK_ENABLE();         \
     } while (0U);
+
 #define FUNC_TIM1ADVANCE_CLK_ENABLE(args) __HAL_RCC_TIM1_CLK_ENABLE()
 #define FUNC_TIM1ADVANCE_CLK_DISABLE(args) __HAL_RCC_TIM1_CLK_DISABLE()
 
-#define PORT_TIM5GENERAL_IC_CH1_GROUP PORT_KEY_1_GROUP              /*脉冲宽度捕获引脚*/
-#define PORT_TIM5GENERAL_IC_CH1_PIN PORT_KEY_1_PIN                  /*脉冲宽度捕获引脚*/
-#define PORT_TIM5GENERAL_IC_CH2_GROUP PORT_CAPACITIVEBUTTON_1_GROUP /*脉冲宽度捕获引脚*/
-#define PORT_TIM5GENERAL_IC_CH2_PIN PORT_CAPACITIVEBUTTON_1_PIN     /*脉冲宽度捕获引脚*/
+#define PORT_TIM5GENERAL_IC_CH1_GROUP GPIOA    /*脉冲宽度捕获引脚*/
+#define PORT_TIM5GENERAL_IC_CH1_PIN GPIO_PIN_0 /*脉冲宽度捕获引脚*/
+#define PORT_TIM5GENERAL_IC_CH2_GROUP GPIOA    /*脉冲宽度捕获引脚*/
+#define PORT_TIM5GENERAL_IC_CH2_PIN GPIO_PIN_1 /*脉冲宽度捕获引脚*/
 
 #define PORT_TIM5GENERAL_CHANNEL_1 TIM_CHANNEL_1 /*TIM捕获通道选择，共有4个，与IO相对应*/
 #define PORT_TIM5GENERAL_CHANNEL_2 TIM_CHANNEL_2 /*TIM捕获通道选择，共有4个，与IO相对应*/
 
-#define FUNC_TIM5GENERAL_PIN_CLK_ENABLE(args)   \
-    do                                          \
-    {                                           \
-        FUNC_KEY_1_PIN_CLK_ENABLE();                \
-        FUNC_CAPACITIVEBUTTON_PIN_CLK_ENABLE(); \
+#define FUNC_TIM5GENERAL_PIN_CLK_ENABLE(args) \
+    do                                        \
+    {                                         \
+        __HAL_RCC_GPIOA_CLK_ENABLE();         \
     } while (0U);
+#define FUNC_TIM5GENERAL_PIN_CLK_DISABLE(args) \
+    do                                         \
+    {                                          \
+        __HAL_RCC_GPIOA_CLK_DISABLE();         \
+    } while (0U);
+
 #define FUNC_TIM5GENERAL_CLK_ENABLE(args) __HAL_RCC_TIM5_CLK_ENABLE()
 #define FUNC_TIM5GENERAL_CLK_DISABLE(args) __HAL_RCC_TIM5_CLK_DISABLE()
 /*********************************TIM端口配置************************************/
@@ -225,7 +288,7 @@ void InitializeDMA1ForProtocol(void);
 /**
  * @description: TIM功能
  */
-extern TIM_HandleTypeDef V_config_tim6base;
+extern TIM_HandleTypeDef V_handle_tim6base;
 
 /*基本定时器*/
 /*实际定时时间为1/(72M/(定时器预分频*定时器周期)),71&1000对应的是1ms*/
@@ -238,7 +301,7 @@ extern TIM_HandleTypeDef V_config_tim6base;
 #define CONFIG_TIM6_MASTER_OUTPUTTRIGGER TIM_TRGO_RESET          /*TIM 主模式选择(触发输出)*/
 #define CONFIG_TIM6_MASTER_SLAVEMODE TIM_MASTERSLAVEMODE_DISABLE /*TIM主/从模式*/
 
-extern TIM_HandleTypeDef V_config_tim1advance;
+extern TIM_HandleTypeDef V_handle_tim1advance;
 
 /*高级定时器--基本部分*/
 #define CONFIG_TIM1_BASE_PRESCALER (72 - 1)                   /*定时器预分频，实际时钟频率是72M/(CONFIG_TIM1BASE_PRESCALER + 1)*/
@@ -284,7 +347,7 @@ extern TIM_HandleTypeDef V_config_tim1advance;
 #define CONFIG_TIM1_BDT_BREAK2FILTER NULL                          /*断路2输入滤波器，定义BRK2输入的采样频率和适用于BRK2的数字滤波器带宽*/
 #define CONFIG_TIM1_BDT_AUTOMATICOUTPUT TIM_AUTOMATICOUTPUT_ENABLE /*自动输出使能，可选使能或禁止*/
 
-extern TIM_HandleTypeDef V_config_tim5general;
+extern TIM_HandleTypeDef V_handle_tim5general;
 
 /*高级定时器--基本部分*/
 #define CONFIG_TIM5_BASE_PRESCALER (72 - 1)                   /*定时器预分频，实际时钟频率是72M/(CONFIG_TIM5BASE_PRESCALER + 1)*/
@@ -342,19 +405,19 @@ extern Type_Status_TIM_IC V_data_tim5general_ic_ch1;
 extern Type_Status_TIM_IC V_data_tim5general_ic_ch2;
 
 void InitializeTIM6Base(void);
-void InitializeTIM6BaseForGPIO(void);
-void InitializeTIM6BaseForProtocol(void);
+static void InitializeTIM6BaseForPin(void);
+static void InitializeTIM6BaseForConfig(void);
 
 void InitializeTIM1Advance(void);
-void InitializeTIM1AdvanceForGPIO(void);
-void InitializeTIM1AdvanceForProtocol(void);
+static void InitializeTIM1AdvanceForPin(void);
+static void InitializeTIM1AdvanceForConfig(void);
 void FuncTIM1AdvancePWMStart(void);
-void FuncTIM1AdvancePWMStop(void);
-void FuncTIM1AdvancePWMChangePulse(uint16_t m_pulse_ms);
+static void FuncTIM1AdvancePWMStop(void);
+static void FuncTIM1AdvancePWMChangePulse(uint16_t m_pulse_ms);
 
 void InitializeTIM5General(void);
-void InitializeTIM5GeneralForGPIO(void);
-void InitializeTIM5GeneralForProtocol(void);
+static void InitializeTIM5GeneralForPin(void);
+static void InitializeTIM5GeneralForConfig(void);
 uint32_t FuncTIM5GeneralGetICValue(uint32_t m_channel);
 /*********************************TIM功能************************************/
 

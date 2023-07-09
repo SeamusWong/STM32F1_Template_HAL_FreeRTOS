@@ -35,8 +35,11 @@ void SystemClockConfig(void);
 /**
  * @description: LED功能
  */
-#define STATUS_LED_ON GPIO_PIN_RESET
-#define STATUS_LED_OFF GPIO_PIN_SET
+typedef enum
+{
+    STATUS_LED_ON = GPIO_PIN_RESET,
+    STATUS_LED_OFF = GPIO_PIN_SET
+} Type_Status_LED;
 
 typedef enum
 {
@@ -51,8 +54,8 @@ typedef enum
 } Type_Status_LED_Colour;
 
 void InitializeLED1(void);
-void InitializeLED1ForPin(void);
-void InitializeLED1ForProcotol(void);
+static void InitializeLED1ForPin(void);
+static void InitializeLED1ForConfig(void);
 void FuncLED1SetColour(Type_Status_LED_Colour m_colour);
 Type_Status_LED_Colour FuncLED1ReadColour(void);
 void FuncLED1Toggle(void);
@@ -100,14 +103,14 @@ typedef enum
 } Type_Status_KEY;
 
 void InitializeKEY1(void);
-void InitializeKEY1ForPin(void);
-void InitializeKEY1ForProcotol(void);
-Type_Status_KEY FuncKEY1ReadStatus(void);
+static void InitializeKEY1ForPin(void);
+static void InitializeKEY1ForConfig(void);
+Type_Status_KEY FuncKEY1GetStatus(void);
 
 void InitializeKEY2(void);
-void InitializeKEY2ForPin(void);
-void InitializeKEY2ForProcotol(void);
-Type_Status_KEY FuncKEY2ReadStatus(void);
+static void InitializeKEY2ForPin(void);
+static void InitializeKEY2ForConfig(void);
+Type_Status_KEY FuncKEY2GetStatus(void);
 /*********************************KEY功能************************************/
 
 /**
@@ -138,8 +141,8 @@ typedef enum
 } Type_Status_BEEP;
 
 void InitializeBEEP1(void);
-void InitializeBEEP1ForPin(void);
-void InitializeBEEP1ForProcotol(void);
+static void InitializeBEEP1ForPin(void);
+static void InitializeBEEP1ForConfig(void);
 void FuncBEEP1SetStatus(Type_Status_BEEP m_status_beep);
 /*********************************BEEP功能************************************/
 
@@ -170,14 +173,14 @@ void FuncBEEP1SetStatus(Type_Status_BEEP m_status_beep);
 
 #define STATUS_EEPROM_1_TOTALSIZE 256 /*总容量*/
 #define STATUS_EEPROM_1_PAGESIZE 8    /*页大小*/
-/*********************************EEPROM端口配置************************************/
+                                      /*********************************EEPROM端口配置************************************/
 
 /**
  * @description: EEPROM功能
  */
 void InitializeEEPROM1(void);
-void InitializeEEPROM1ForPin(void);
-void InitializeEEPROM1ForProtocol(void);
+static void InitializeEEPROM1ForPin(void);
+static void InitializeEEPROM1ForConfig(void);
 /**
  * @description:EEPROM指定位置写入
  * @param {uint8_t} *m_buffer_ptr 准备发送的缓冲区指针
@@ -261,14 +264,14 @@ typedef enum
  */
 #define FUNC_FLASH_1_TRANSMIT(m_buffer_ptr, m_num_to_write) FuncSPI1Transmit(m_buffer_ptr, m_num_to_write);
 #define FUNC_FLASH_1_RECEIVE(m_buffer_ptr, m_num_to_read) FuncSPI1Receive(m_buffer_ptr, m_num_to_read)
-#define FUNC_FLASH_1_NSS_READY(args) FuncSPI1NSSReady(PORT_FLASH_1_NSS_GROUP,PORT_FLASH_1_NSS_PIN)
+#define FUNC_FLASH_1_NSS_READY(args) FuncSPI1NSSReady(PORT_FLASH_1_NSS_GROUP, PORT_FLASH_1_NSS_PIN)
 #define FUNC_FLASH_1_NSS_QUIT(args) FuncSPI1NSSQuit(PORT_FLASH_1_NSS_GROUP, PORT_FLASH_1_NSS_PIN)
 
 void InitializeFLASH1(void);
-void InitializeFLASH1ForPin(void);
-void InitializeFLASH1ForProtocol(void);
+static void InitializeFLASH1ForPin(void);
+static void InitializeFLASH1ForConfig(void);
 void FuncFLASH1Command(Type_Commd_FLASH m_commd_flash);
-uint32_t FuncFLASH1CallbackID(void);
+uint32_t FuncFLASH1CallbackDeviceID(void);
 void FuncFLASH1WriteEnable(void);
 void FuncFLASH1EraseForSectorSingle(uint32_t m_target_mem_ptr);
 void FuncFLASH1EraseForSector(uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
@@ -282,79 +285,90 @@ void FuncFLASH1WaitForRead(void);
 /**
  * @description: LCD端口配置
  */
-#define PORT_LCD_CS_GROUP PORT_FSMC_NE_4_GROUP /*片选，选择NOR/SRAM块*/
-#define PORT_LCD_CS_PIN PORT_FSMC_NE_4_PIN     /*片选，选择NOR/SRAM块*/
+#define PORT_LCD_1_CS_GROUP PORT_FSMC_NE_4_GROUP /*片选，选择NOR/SRAM块*/
+#define PORT_LCD_1_CS_PIN PORT_FSMC_NE_4_PIN     /*片选，选择NOR/SRAM块*/
 
-#define PORT_LCD_NSS_GROUP PORT_LCD_CS_GROUP /*CS改名字*/
-#define PORT_LCD_NSS_PIN PORT_LCD_CS_PIN     /*CS改名字*/
+#define PORT_LCD_1_NSS_GROUP PORT_LCD_1_CS_GROUP /*CS改名字*/
+#define PORT_LCD_1_NSS_PIN PORT_LCD_1_CS_PIN     /*CS改名字*/
 
-#define PORT_LCD_RST_GROUP GPIOG     /*复位引脚*/
-#define PORT_LCD_RST_PIN GPIO_PIN_11 /*复位引脚*/
+#define PORT_LCD_1_RST_GROUP GPIOG     /*复位引脚*/
+#define PORT_LCD_1_RST_PIN GPIO_PIN_11 /*复位引脚*/
 
-#define PORT_LCD_BK_GROUP GPIOG    /*背光引脚*/
-#define PORT_LCD_BK_PIN GPIO_PIN_6 /*背光引脚*/
+#define PORT_LCD_1_BK_GROUP GPIOG    /*背光引脚*/
+#define PORT_LCD_1_BK_PIN GPIO_PIN_6 /*背光引脚*/
 
-#define PORT_LCD_RS_GROUP PORT_FSMC_A23_GROUP /*DATA/COMMAND引脚*/
-#define PORT_LCD_RS_PIN PORT_FSMC_A23_PIN     /*DATA/COMMAND引脚*/
+#define PORT_LCD_1_RS_GROUP PORT_FSMC_A23_GROUP /*DATA/COMMAND引脚*/
+#define PORT_LCD_1_RS_PIN PORT_FSMC_A23_PIN     /*DATA/COMMAND引脚*/
 
-#define PORT_LCD_WR_GROUP PORT_FSMC_NWE_GROUP /*写使能*/
-#define PORT_LCD_WR_PIN PORT_FSMC_NWE_PIN     /*写使能*/
+#define PORT_LCD_1_WR_GROUP PORT_FSMC_NWE_GROUP /*写使能*/
+#define PORT_LCD_1_WR_PIN PORT_FSMC_NWE_PIN     /*写使能*/
 
-#define PORT_LCD_RD_GROUP PORT_FSMC_NOE_GROUP /*读使能*/
-#define PORT_LCD_RD_PIN PORT_FSMC_NOE_PIN     /*读使能*/
+#define PORT_LCD_1_RD_GROUP PORT_FSMC_NOE_GROUP /*读使能*/
+#define PORT_LCD_1_RD_PIN PORT_FSMC_NOE_PIN     /*读使能*/
 
-#define PORT_LCD_DB0_GROUP PORT_FSMC_D0_GROUP /*数据信号线*/
-#define PORT_LCD_DB0_PIN PORT_FSMC_D0_PIN     /*数据信号线*/
+#define PORT_LCD_1_DB0_GROUP PORT_FSMC_D0_GROUP /*数据信号线*/
+#define PORT_LCD_1_DB0_PIN PORT_FSMC_D0_PIN     /*数据信号线*/
 
-#define PORT_LCD_DB1_GROUP PORT_FSMC_D1_GROUP /*数据信号线*/
-#define PORT_LCD_DB1_PIN PORT_FSMC_D1_PIN     /*数据信号线*/
+#define PORT_LCD_1_DB1_GROUP PORT_FSMC_D1_GROUP /*数据信号线*/
+#define PORT_LCD_1_DB1_PIN PORT_FSMC_D1_PIN     /*数据信号线*/
 
-#define PORT_LCD_DB2_GROUP PORT_FSMC_D2_GROUP
-#define PORT_LCD_DB2_PIN PORT_FSMC_D2_PIN
+#define PORT_LCD_1_DB2_GROUP PORT_FSMC_D2_GROUP
+#define PORT_LCD_1_DB2_PIN PORT_FSMC_D2_PIN
 
-#define PORT_LCD_DB3_GROUP PORT_FSMC_D3_GROUP
-#define PORT_LCD_DB3_PIN PORT_FSMC_D3_PIN
+#define PORT_LCD_1_DB3_GROUP PORT_FSMC_D3_GROUP
+#define PORT_LCD_1_DB3_PIN PORT_FSMC_D3_PIN
 
-#define PORT_LCD_DB4_GROUP PORT_FSMC_D4_GROUP
-#define PORT_LCD_DB4_PIN PORT_FSMC_D4_PIN
+#define PORT_LCD_1_DB4_GROUP PORT_FSMC_D4_GROUP
+#define PORT_LCD_1_DB4_PIN PORT_FSMC_D4_PIN
 
-#define PORT_LCD_DB5_GROUP PORT_FSMC_D5_GROUP
-#define PORT_LCD_DB5_PIN PORT_FSMC_D5_PIN
+#define PORT_LCD_1_DB5_GROUP PORT_FSMC_D5_GROUP
+#define PORT_LCD_1_DB5_PIN PORT_FSMC_D5_PIN
 
-#define PORT_LCD_DB6_GROUP PORT_FSMC_D6_GROUP
-#define PORT_LCD_DB6_PIN PORT_FSMC_D6_PIN
+#define PORT_LCD_1_DB6_GROUP PORT_FSMC_D6_GROUP
+#define PORT_LCD_1_DB6_PIN PORT_FSMC_D6_PIN
 
-#define PORT_LCD_DB7_GROUP PORT_FSMC_D7_GROUP
-#define PORT_LCD_DB7_PIN PORT_FSMC_D7_PIN
+#define PORT_LCD_1_DB7_GROUP PORT_FSMC_D7_GROUP
+#define PORT_LCD_1_DB7_PIN PORT_FSMC_D7_PIN
 
-#define PORT_LCD_DB8_GROUP PORT_FSMC_D8_GROUP
-#define PORT_LCD_DB8_PIN PORT_FSMC_D8_PIN
+#define PORT_LCD_1_DB8_GROUP PORT_FSMC_D8_GROUP
+#define PORT_LCD_1_DB8_PIN PORT_FSMC_D8_PIN
 
-#define PORT_LCD_DB9_GROUP PORT_FSMC_D9_GROUP
-#define PORT_LCD_DB9_PIN PORT_FSMC_D9_PIN
+#define PORT_LCD_1_DB9_GROUP PORT_FSMC_D9_GROUP
+#define PORT_LCD_1_DB9_PIN PORT_FSMC_D9_PIN
 
-#define PORT_LCD_DB10_GROUP PORT_FSMC_D10_GROUP
-#define PORT_LCD_DB10_PIN PORT_FSMC_D10_PIN
+#define PORT_LCD_1_DB10_GROUP PORT_FSMC_D10_GROUP
+#define PORT_LCD_1_DB10_PIN PORT_FSMC_D10_PIN
 
-#define PORT_LCD_DB11_GROUP PORT_FSMC_D11_GROUP
-#define PORT_LCD_DB11_PIN PORT_FSMC_D11_PIN
+#define PORT_LCD_1_DB11_GROUP PORT_FSMC_D11_GROUP
+#define PORT_LCD_1_DB11_PIN PORT_FSMC_D11_PIN
 
-#define PORT_LCD_DB12_GROUP PORT_FSMC_D12_GROUP
-#define PORT_LCD_DB12_PIN PORT_FSMC_D12_PIN
+#define PORT_LCD_1_DB12_GROUP PORT_FSMC_D12_GROUP
+#define PORT_LCD_1_DB12_PIN PORT_FSMC_D12_PIN
 
-#define PORT_LCD_DB13_GROUP PORT_FSMC_D13_GROUP
-#define PORT_LCD_DB13_PIN PORT_FSMC_D13_PIN
+#define PORT_LCD_1_DB13_GROUP PORT_FSMC_D13_GROUP
+#define PORT_LCD_1_DB13_PIN PORT_FSMC_D13_PIN
 
-#define PORT_LCD_DB14_GROUP PORT_FSMC_D14_GROUP
-#define PORT_LCD_DB14_PIN PORT_FSMC_D14_PIN
+#define PORT_LCD_1_DB14_GROUP PORT_FSMC_D14_GROUP
+#define PORT_LCD_1_DB14_PIN PORT_FSMC_D14_PIN
 
-#define PORT_LCD_DB15_GROUP PORT_FSMC_D15_GROUP
-#define PORT_LCD_DB15_PIN PORT_FSMC_D15_PIN
+#define PORT_LCD_1_DB15_GROUP PORT_FSMC_D15_GROUP
+#define PORT_LCD_1_DB15_PIN PORT_FSMC_D15_PIN
 
 #define STATUS_LCD_PIXELWIDTH 240  /*屏幕宽度*/
 #define STATUS_LCD_PIXELHEIGHT 320 /*屏幕高度*/
 
-#define FUNC_LCD_PIN_ALL_CLK_ENABLE(args) FUNC_FSMC_PIN_ALL_CLK_ENABLE(args)
+#define FUNC_LCD_PIN_CLK_ENABLE(args) \
+    do                                \
+    {                                 \
+        __HAL_RCC_GPIOG_CLK_ENABLE(); \
+        FUNC_FSMC_PIN_CLK_ENABLE();   \
+    } while (0U);
+#define FUNC_LCD_PIN_CLK_DISABLE(args) \
+    do                                 \
+    {                                  \
+        __HAL_RCC_GPIOG_CLK_DISABLE(); \
+        FUNC_FSMC_PIN_CLK_DISABLE();   \
+    } while (0U);
 
 /*********************************LCD端口配置************************************/
 
@@ -445,13 +459,6 @@ typedef enum
     COMMD_LCD_PROMEN = 0xFA,    /* Program Mode Enable */
     COMMD_LCD_NVMSET = 0xFC,    /* NVM Setting */
     COMMD_LCD_PROMACT = 0xFE    /* Program action */
-
-    // COMMD_LCD_DEVICEID = 0x04,
-    // COMMD_LCD_SETGRAMDIRECTION = 0x36,
-    // COMMD_LCD_SETX = 0x2A,
-    // COMMD_LCD_SETY = 0x2B,
-    // COMMD_LCD_GRAMWRITE = 0x2C,
-    // COMMD_LCD_GRAMREAD = 0x2E,
 } Type_Commd_LCD;
 
 typedef enum
@@ -470,13 +477,14 @@ typedef enum
     STATUS_LCD_COLOUR_GRED = 0xFFE0,
     STATUS_LCD_COLOUR_GBLUE = 0x07FF
 } Type_Status_LCD_Colour;
+
 #define STATUS_LCD_COLOUR_BACKGROUND ((Type_Status_LCD_Colour)STATUS_LCD_COLOUR_BLACK)
 
 typedef enum
 {
-    STATUS_LCD_LIGHT_DISABLE = 0,
-    STATUS_LCD_LIGHT_ENABLE = !STATUS_LCD_LIGHT_DISABLE
-} Type_Status_LCD_Light;
+    STATUS_LCD_BKLIGHT_ENABLE = GPIO_PIN_RESET,
+    STATUS_LCD_BKLIGHT_DISABLE = GPIO_PIN_SET
+} Type_Status_LCD_BkLight;
 
 typedef enum
 {
@@ -499,94 +507,50 @@ typedef enum
 
 typedef enum
 {
-    STATUS_LCD_LINEFILL_EMPTY,
-    STATUS_LCD_LINEFILL_FULL
-} Type_Status_LCD_LineFill;
+    STATUS_LCD_FILL_EMPTY,
+    STATUS_LCD_FILL_FULL
+} Type_Status_LCD_Fill;
 
-void InitializeLCD(void);
-void InitializeLCDForGpio(void);
-void InitializeLCDForProtocol(void);
-void FuncLCDCommand(Type_Commd_LCD m_commd_lcd);
-void FuncLCDWriteDataForSingle(uint16_t m_data_lcd);
-uint16_t FuncLCDReadDataForSingle(void);
-uint32_t FuncLCDCallbackID(void);
-void FuncLCDReset(void);
-void FuncLCDSetBacklight(Type_Status_LCD_Light m_light);
-void FuncLCDSetDisplayDirection(Type_Status_LCD_DisplayDirection m_direction);
-void FuncLCDSetWindow(uint16_t m_point_x, uint16_t m_point_y, uint16_t m_window_width, uint16_t m_window_height);
-void FuncLCDFill(uint32_t m_num_point, Type_Status_LCD_Colour m_colour);
-void FuncLCDDrawFullScreen(Type_Status_LCD_Colour m_colour);
-void FuncLCDDrawPoint(uint16_t m_point_x, uint16_t m_point_y, Type_Status_LCD_Colour m_colour);
-void FuncLCDDrawLine(uint16_t m_point_x, uint16_t m_point_y, uint16_t m_length, Type_Status_LCD_Colour m_colour, Type_Status_LCD_LineDirection m_direction);
-void FuncLCDDrawRectangleForCorner(uint16_t m_point_x, uint16_t m_point_y, uint16_t m_width, uint16_t m_height, Type_Status_LCD_Colour m_colour, Type_Status_LCD_LineFill m_fill);
-void FuncLCDDrawRectangleForCenter(uint16_t m_point_x, uint16_t m_point_y, uint16_t m_width, uint16_t m_height, Type_Status_LCD_Colour m_colour, Type_Status_LCD_LineFill m_fill);
+void InitializeLCD1(void);
+static void InitializeLCD1ForPin(void);
+static void InitializeLCD1ForConfig(void);
+
+void FuncLCD1Command(Type_Commd_LCD m_commd_lcd);
+void FuncLCD1WriteDataForSingle(uint16_t m_data_lcd);
+uint16_t FuncLCD1ReadDataForSingle(void);
+uint32_t FuncLCD1CallbackID(void);
+void FuncLCD1Reset(void);
+void FuncLCD1SetBacklight(Type_Status_LCD_BkLight m_light);
+void FuncLCD1SetDisplayDirection(Type_Status_LCD_DisplayDirection m_direction);
+void FuncLCD1SetWindow(uint16_t m_point_x, uint16_t m_point_y, uint16_t m_window_width, uint16_t m_window_height);
+void FuncLCD1Fill(uint32_t m_num_point, Type_Status_LCD_Colour m_colour);
+void FuncLCD1DrawFullScreen(Type_Status_LCD_Colour m_colour);
+void FuncLCD1DrawPoint(uint16_t m_point_x, uint16_t m_point_y, Type_Status_LCD_Colour m_colour);
+void FuncLCD1DrawLine(uint16_t m_point_x, uint16_t m_point_y, uint16_t m_length, Type_Status_LCD_Colour m_colour, Type_Status_LCD_LineDirection m_direction);
+void FuncLCD1DrawRectangleForCorner(uint16_t m_point_x, uint16_t m_point_y, uint16_t m_width, uint16_t m_height, Type_Status_LCD_Colour m_colour, Type_Status_LCD_Fill m_fill);
+void FuncLCD1DrawRectangleForCenter(uint16_t m_point_x, uint16_t m_point_y, uint16_t m_width, uint16_t m_height, Type_Status_LCD_Colour m_colour, Type_Status_LCD_Fill m_fill);
 /**
  * @description: 返回某个像素点的颜色
  * @return {*}16位颜色值(5位R|6位G|5位B)，与Type_Status_LCD_Colour遵循相同规则
  */
-uint16_t FuncLCDReadColour(uint16_t m_point_x, uint16_t m_point_y);
-void FuncLCDDrawCharForASCII(uint16_t m_point_x, uint16_t m_point_y, char m_char, Type_Status_LCD_Colour m_colour, Type_Font_ASCII *m_font);
-void FuncLCDDrawStrForASCII(uint16_t m_point_x, uint16_t m_point_y, char *m_str, Type_Status_LCD_Colour m_colour, Type_Font_ASCII *m_font);
+uint16_t FuncLCD1GetColour(uint16_t m_point_x, uint16_t m_point_y);
+void FuncLCD1DrawCharForASCII(uint16_t m_point_x, uint16_t m_point_y, char m_char, Type_Status_LCD_Colour m_colour, Type_Font_ASCII *m_font);
+void FuncLCD1DrawStrForASCII(uint16_t m_point_x, uint16_t m_point_y, char *m_str, Type_Status_LCD_Colour m_colour, Type_Font_ASCII *m_font);
 /*********************************LCD功能************************************/
-
-/**
- * @description: ADC端口配置
- */
-#define PORT_ADC1_1_GROUP GPIOC
-#define PORT_ADC1_1_PIN GPIO_PIN_1
-#define PORT_ADC1_1_CHANNEL ADC_CHANNEL_11 /*通道和引脚具有对应关系,根据ADCx的不同有些变化*/
-
-#define PORT_ADC1_DMACHANNEL DMA1_Channel1 /*ADC1占据DMA1的通道1，是固定的*/
-
-#define FUNC_ADC1_PIN_CLK_ENABLE(args) \
-    do                                 \
-    {                                  \
-        __HAL_RCC_GPIOA_CLK_ENABLE();  \
-        __HAL_RCC_GPIOC_CLK_ENABLE();  \
-        __HAL_RCC_ADC1_CLK_ENABLE();   \
-    } while (0U);
-
-#define STATUS_ADC1_INPUTVOLTAGE ((float)3.3)       /*ADC输入电压范围，由由VREF-、VREF+、VDDA、VSSA、这四个外部引脚决定*/
-#define STATUS_ADC1_ACCURACY ((float)(0x1UL << 12)) /*ADC精度，12位就是4096个等级*/
-/*********************************ADC端口配置************************************/
-
-/**
- * @description: ADC功能
- */
-extern ADC_HandleTypeDef V_config_adc1;
-
-extern uint16_t V_data_adc1_array[7]; /*ADC有最多16个通道，但DMA1只有7个*/
-
-#define CONFIG_ADC1_CLK_PERIPHCLOCKSELECTION RCC_PERIPHCLK_ADC /*ADC外设时钟*/
-#define CONFIG_ADC1_CLK_ADCCLOCKSELECTION RCC_ADCPCLK2_DIV6    /*分频因子，最终时钟是72M/因子*/
-
-#define CONFIG_ADC1_CHANNEL_SAMPLINGTIME ADC_SAMPLETIME_55CYCLES_5 /*采样时间（ADC周期）*/
-
-#define CONFIG_ADC1_DATAALIGN ADC_DATAALIGN_RIGHT       /*左/右对齐*/
-#define CONFIG_ADC1_SCANCONVMODE ENABLE                 /*多通道/单通道模式*/
-#define CONFIG_ADC1_CONTINUOUSCONVMODE ENABLE           /*使能连续转换*/
-#define CONFIG_ADC1_NBROFCONVERSION 1                   /*连续转换通道数*/
-#define CONFIG_ADC1_NBROFDISCCONVERSION 0               /*不连续转换通道数*/
-#define CONFIG_ADC1_DISCONTINUOUSCONVMODE DISABLE       /*使能不连续转换*/
-#define CONFIG_ADC1_EXTERNALTRIGCONV ADC_SOFTWARE_START /*转换触发信号选择*/
-
-void InitializeADC1(void);
-void InitializeADC1ForGpio(void);
-void InitializeADC1ForProtocol(void);
-float FuncADC1GetVoltage(uint32_t m_adc_channel);
-/*********************************ADC功能************************************/
 
 /**
  * @description: 电容按键端口配置
  */
-#define PORT_CAPACITIVEBUTTON_1_GROUP GPIOA
-#define PORT_CAPACITIVEBUTTON_1_PIN GPIO_PIN_1
+#define PORT_CAPACITIVEBUTTON_1_GROUP PORT_TIM5GENERAL_IC_CH2_GROUP
+#define PORT_CAPACITIVEBUTTON_1_PIN PORT_TIM5GENERAL_IC_CH2_PIN
 
 #define FUNC_CAPACITIVEBUTTON_PIN_CLK_ENABLE(args) \
     do                                             \
     {                                              \
-        __HAL_RCC_GPIOA_CLK_ENABLE();              \
+        FUNC_TIM5GENERAL_PIN_CLK_ENABLE();         \
     } while (0U);
+
+#define FUNC_CAPACITIVEBUTTON_1_CLK_ENABLE(args) FUNC_TIM5GENERAL_CLK_ENABLE(args)
 
 typedef enum
 {
@@ -596,45 +560,19 @@ typedef enum
 
 extern uint16_t V_data_capacitivebutton_threshold; /*电容按键脉冲阈值*/
 
-void InitializeCapacitiveButton(void);
-void InitializeCapacitiveButtonForGpio(void);
-void InitializeCapacitiveButtonForProtocol(void);
-void FuncCapacitiveButtonReset(void);
-uint16_t FuncCapacitiveButtonReadPulseWidth(void);
-void FuncCapacitiveButtonSetThreshold(uint16_t m_threshold);
-Type_Status_CapacitiveButton FuncCapacitiveButtonStatusRead(void);
+void InitializeCapacitiveButton1(void);
+static void InitializeCapacitiveButton1ForPin(void);
+static void InitializeCapacitiveButton1ForConfig(void);
+void FuncCapacitiveButton1Reset(void);
+uint16_t FuncCapacitiveButton1GetPulseWidth(void);
+void FuncCapacitiveButton1SetThreshold(uint16_t m_threshold);
+Type_Status_CapacitiveButton FuncCapacitiveButton1GetStatus(void);
 /*********************************电容按键端口配置************************************/
 
 /**
  * @description: Others
  */
-#define FUNC_CHECK_FOR_HAL(m_func, m_info) \
-    do                                     \
-    {                                      \
-        if (m_func != HAL_OK)              \
-        {                                  \
-            printf(m_info);                \
-            printf("\n");                  \
-            FuncErrorAlert();              \
-        }                                  \
-    } while (0U);
-
-#define FUNC_WAITSTATUS_TIMEOUT(m_func, m_status_wait, m_timeout_ms, m_info) \
-    do                                                                       \
-    {                                                                        \
-        uint32_t timeout = m_timeout_ms * (SystemCoreClock / 1000);          \
-        while (m_func != m_status_wait)                                      \
-        {                                                                    \
-            if (!timeout--)                                                  \
-            {                                                                \
-                printf(m_info);                                              \
-                printf("\n");                                                \
-                FuncErrorAlert();                                            \
-            }                                                                \
-        }                                                                    \
-    } while (0U);
 void FuncErrorAlert(void);
-void FuncDelayMicrosecondsForAll(uint32_t us);
 /*********************************Others************************************/
 
 /**

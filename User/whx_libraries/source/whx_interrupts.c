@@ -73,10 +73,10 @@ void USART1_IRQHandler(void)
 {
     uint8_t ch = 0;
 
-    if (__HAL_UART_GET_FLAG(&V_config_usart1, UART_FLAG_RXNE) != RESET)
+    if (__HAL_UART_GET_FLAG(&V_handle_usart1, UART_FLAG_RXNE) != RESET)
     {
-        ch = (uint16_t)READ_REG(V_config_usart1.Instance->DR);
-        WRITE_REG(V_config_usart1.Instance->DR, ch);
+        ch = (uint16_t)READ_REG(V_handle_usart1.Instance->DR);
+        WRITE_REG(V_handle_usart1.Instance->DR, ch);
     }
 }
 
@@ -91,13 +91,13 @@ void InitializeInterruptForADC1(uint32_t m_priority_preempt, uint32_t m_priority
 void FuncInterruptForADC1Enable(void)
 {
     HAL_NVIC_EnableIRQ(PORT_INTERRUPT_ADC1_IRQN);
-    HAL_ADC_Start_IT(&V_config_adc1);
+    HAL_ADC_Start_IT(&V_handle_adc1);
 }
 
 void FuncInterruptForADC1Disable(void)
 {
     HAL_NVIC_DisableIRQ(PORT_INTERRUPT_ADC1_IRQN);
-    HAL_ADC_Stop_IT(&V_config_adc1);
+    HAL_ADC_Stop_IT(&V_handle_adc1);
 }
 
 /**
@@ -111,7 +111,7 @@ void FuncInterruptADCCallbackForConvCplt(ADC_HandleTypeDef *m_config_adc)
     }
 }
 
-void ADC1_IRQHandler(void) { HAL_ADC_IRQHandler(&V_config_adc1); }
+void ADC1_IRQHandler(void) { HAL_ADC_IRQHandler(&V_handle_adc1); }
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *m_config_adc) { FuncInterruptADCCallbackForConvCplt(m_config_adc); }
 
 /**
@@ -127,13 +127,13 @@ void InitializeInterruptForTIM6Base(uint32_t m_priority_preempt, uint32_t m_prio
 void FuncInterruptForTIM6BaseEnable(void)
 {
     HAL_NVIC_EnableIRQ(PORT_INTERRUPT_TIM6BASE_IRQN);
-    HAL_TIM_Base_Start_IT(&V_config_tim6base);
+    HAL_TIM_Base_Start_IT(&V_handle_tim6base);
 }
 
 void FuncInterruptForTIM6BaseDisable(void)
 {
     HAL_NVIC_DisableIRQ(PORT_INTERRUPT_TIM6BASE_IRQN);
-    HAL_TIM_Base_Stop_IT(&V_config_tim6base);
+    HAL_TIM_Base_Stop_IT(&V_handle_tim6base);
 }
 
 /*高级定时器*/
@@ -145,17 +145,17 @@ void InitializeInterruptForTIM5General(uint32_t m_priority_preempt, uint32_t m_p
 void FuncInterruptForTIM5GeneralEnable(void)
 {
     HAL_NVIC_EnableIRQ(PORT_INTERRUPT_TIM5GENERAL_IRQN);
-    FUNC_CHECK_FOR_HAL(HAL_TIM_Base_Start_IT(&V_config_tim5general), "ERROR TIM5_Interrupt_Base_Start");
-    FUNC_CHECK_FOR_HAL(HAL_TIM_IC_Start_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_1), "ERROR TIM5_Interrupt_IC_Start");
-    FUNC_CHECK_FOR_HAL(HAL_TIM_IC_Start_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_2), "ERROR TIM5_Interrupt_IC_Start");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_Base_Start_IT(&V_handle_tim5general), "ERROR TIM5_Interrupt_Base_Start");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_IC_Start_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_1), "ERROR TIM5_Interrupt_IC_Start");
+    FUNC_CHECK_FOR_HAL(HAL_TIM_IC_Start_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_2), "ERROR TIM5_Interrupt_IC_Start");
 }
 
 void FuncInterruptForTIM5GeneralDisable(void)
 {
     HAL_NVIC_DisableIRQ(PORT_INTERRUPT_TIM5GENERAL_IRQN);
-    HAL_TIM_Base_Stop_IT(&V_config_tim5general);
-    HAL_TIM_IC_Stop_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
-    HAL_TIM_IC_Stop_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_2);
+    HAL_TIM_Base_Stop_IT(&V_handle_tim5general);
+    HAL_TIM_IC_Stop_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
+    HAL_TIM_IC_Stop_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_2);
 }
 
 /**
@@ -187,17 +187,17 @@ void FuncInterruptTIMCallbackFoICCapture(TIM_HandleTypeDef *m_config_tim)
             TIM_IC_InitTypeDef config_tim5general_ic;
             if (V_data_tim5general_ic_ch1.flag_start == 0)
             {
-                HAL_TIM_IC_Stop_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
-                __HAL_TIM_SET_COUNTER(&V_config_tim5general, 0);
+                HAL_TIM_IC_Stop_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
+                __HAL_TIM_SET_COUNTER(&V_handle_tim5general, 0);
 
                 config_tim5general_ic.ICPolarity = (CONFIG_TIM5_IC_ICPOLARITY == TIM_ICPOLARITY_RISING ? TIM_ICPOLARITY_FALLING : TIM_ICPOLARITY_RISING);
                 config_tim5general_ic.ICFilter = CONFIG_TIM5_IC_ICFILTER;
                 config_tim5general_ic.ICPrescaler = CONFIG_TIM5_IC_ICPRESCALER;
                 config_tim5general_ic.ICSelection = CONFIG_TIM5_IC_ICSELECTION;
-                HAL_TIM_IC_ConfigChannel(&V_config_tim5general, &config_tim5general_ic, PORT_TIM5GENERAL_CHANNEL_1);
+                HAL_TIM_IC_ConfigChannel(&V_handle_tim5general, &config_tim5general_ic, PORT_TIM5GENERAL_CHANNEL_1);
 
                 /*启动输入捕获*/
-                HAL_TIM_IC_Start_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
+                HAL_TIM_IC_Start_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
 
                 V_data_tim5general_ic_ch1.data_period = 0;
                 V_data_tim5general_ic_ch1.data_register = 0;
@@ -205,19 +205,19 @@ void FuncInterruptTIMCallbackFoICCapture(TIM_HandleTypeDef *m_config_tim)
             }
             else
             {
-                HAL_TIM_IC_Stop_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
+                HAL_TIM_IC_Stop_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
 
-                V_data_tim5general_ic_ch1.data_register = HAL_TIM_ReadCapturedValue(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
+                V_data_tim5general_ic_ch1.data_register = HAL_TIM_ReadCapturedValue(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
                 V_data_tim5general_ic_ch1.data_result = V_data_tim5general_ic_ch1.data_period * CONFIG_TIM5_BASE_PERIOD + V_data_tim5general_ic_ch1.data_register;
 
                 config_tim5general_ic.ICPolarity = (CONFIG_TIM5_IC_ICPOLARITY == TIM_ICPOLARITY_RISING ? TIM_ICPOLARITY_RISING : TIM_ICPOLARITY_FALLING);
                 config_tim5general_ic.ICFilter = CONFIG_TIM5_IC_ICFILTER;
                 config_tim5general_ic.ICPrescaler = CONFIG_TIM5_IC_ICPRESCALER;
                 config_tim5general_ic.ICSelection = CONFIG_TIM5_IC_ICSELECTION;
-                HAL_TIM_IC_ConfigChannel(&V_config_tim5general, &config_tim5general_ic, PORT_TIM5GENERAL_CHANNEL_1);
+                HAL_TIM_IC_ConfigChannel(&V_handle_tim5general, &config_tim5general_ic, PORT_TIM5GENERAL_CHANNEL_1);
 
                 /*启动输入捕获*/
-                HAL_TIM_IC_Start_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
+                HAL_TIM_IC_Start_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_1);
 
                 V_data_tim5general_ic_ch1.data_period = 0;
                 V_data_tim5general_ic_ch1.data_register = 0;
@@ -231,12 +231,12 @@ void FuncInterruptTIMCallbackFoICCapture(TIM_HandleTypeDef *m_config_tim)
             TIM_IC_InitTypeDef config_tim5general_ic;
             if (V_data_tim5general_ic_ch2.flag_start == 0)
             {
-                HAL_TIM_IC_Stop_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_2);
+                HAL_TIM_IC_Stop_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_2);
 
-                V_data_tim5general_ic_ch2.data_register = HAL_TIM_ReadCapturedValue(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_2);
+                V_data_tim5general_ic_ch2.data_register = HAL_TIM_ReadCapturedValue(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_2);
                 V_data_tim5general_ic_ch2.data_result = V_data_tim5general_ic_ch2.data_period * CONFIG_TIM5_BASE_PERIOD + V_data_tim5general_ic_ch2.data_register;
 
-                HAL_TIM_IC_Start_IT(&V_config_tim5general, PORT_TIM5GENERAL_CHANNEL_2);
+                HAL_TIM_IC_Start_IT(&V_handle_tim5general, PORT_TIM5GENERAL_CHANNEL_2);
 
                 V_data_tim5general_ic_ch2.data_period = 0;
                 V_data_tim5general_ic_ch2.data_register = 0;
@@ -250,8 +250,8 @@ void FuncInterruptTIMCallbackFoICCapture(TIM_HandleTypeDef *m_config_tim)
     }
 }
 
-void TIM6_IRQHandler(void) { HAL_TIM_IRQHandler(&V_config_tim6base); }
-void TIM5_IRQHandler(void) { HAL_TIM_IRQHandler(&V_config_tim5general); }
+void TIM6_IRQHandler(void) { HAL_TIM_IRQHandler(&V_handle_tim6base); }
+void TIM5_IRQHandler(void) { HAL_TIM_IRQHandler(&V_handle_tim5general); }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *m_config_tim) { FuncInterruptTIMCallbackForPeriodElapsed(m_config_tim); }
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *m_config_tim) { FuncInterruptTIMCallbackFoICCapture(m_config_tim); }
 

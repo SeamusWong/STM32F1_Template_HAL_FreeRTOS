@@ -1,5 +1,5 @@
-#ifndef H_TASK_FUNCTIONS_
-#define H_TASK_FUNCTIONS_
+#ifndef H_WHX_TASKS_
+#define H_WHX_TASKS_
 
 /* FreeRTOS头文件 */
 #include "FreeRTOS.h"
@@ -22,12 +22,12 @@
 /**
  * @description: 任务句柄
  */
-static TaskHandle_t Handle_Task_DeviceStart = NULL;
-static TaskHandle_t Handle_Task_IdleLED = NULL;
-static TaskHandle_t Handle_Task_ScreenSystemTime = NULL;
-static TaskHandle_t Handle_Task_ScreenShowInfo = NULL;
-static TaskHandle_t Handle_Task_CapacitiveButtonLED = NULL;
-static TaskHandle_t Handle_Task_ScreenChangeByKey = NULL;
+static TaskHandle_t V_handle_task_DeviceStart = NULL;
+static TaskHandle_t V_handle_task_IdleLED = NULL;
+static TaskHandle_t V_handle_task_ScreenSystemTime = NULL;
+static TaskHandle_t V_handle_task_ScreenShowInfo = NULL;
+static TaskHandle_t V_handle_task_CapacitiveButtonLED = NULL;
+static TaskHandle_t V_handle_task_ScreenChangeByKey = NULL;
 /*********************************任务句柄************************************/
 
 /**
@@ -41,4 +41,4 @@ void TaskCapacitiveButtonLED(void);
 void TaskScreenChangeByKey(void);
 /*********************************任务句柄************************************/
 
-#endif
+#endif /*H_WHX_TASKS_*/
