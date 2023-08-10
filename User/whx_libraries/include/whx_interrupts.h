@@ -67,7 +67,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *m_config_usart_1_struct);
 /**
  * @description: ADC中断功能
  */
-extern ADC_HandleTypeDef V_handle_adc1;
+extern ADC_HandleTypeDef V_handle_adc1_ch11;
 
 void InitializeInterruptForADC1(uint32_t m_priority_preempt, uint32_t m_priority_sub);
 void FuncInterruptForADC1Enable(void);

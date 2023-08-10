@@ -91,13 +91,13 @@ void InitializeInterruptForADC1(uint32_t m_priority_preempt, uint32_t m_priority
 void FuncInterruptForADC1Enable(void)
 {
     HAL_NVIC_EnableIRQ(PORT_INTERRUPT_ADC1_IRQN);
-    HAL_ADC_Start_IT(&V_handle_adc1);
+    HAL_ADC_Start_IT(&V_handle_adc1_ch11);
 }
 
 void FuncInterruptForADC1Disable(void)
 {
     HAL_NVIC_DisableIRQ(PORT_INTERRUPT_ADC1_IRQN);
-    HAL_ADC_Stop_IT(&V_handle_adc1);
+    HAL_ADC_Stop_IT(&V_handle_adc1_ch11);
 }
 
 /**
@@ -111,7 +111,7 @@ void FuncInterruptADCCallbackForConvCplt(ADC_HandleTypeDef *m_config_adc)
     }
 }
 
-void ADC1_IRQHandler(void) { HAL_ADC_IRQHandler(&V_handle_adc1); }
+void ADC1_IRQHandler(void) { HAL_ADC_IRQHandler(&V_handle_adc1_ch11); }
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *m_config_adc) { FuncInterruptADCCallbackForConvCplt(m_config_adc); }
 
 /**
