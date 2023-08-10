@@ -167,7 +167,7 @@ uint16_t FuncFSMCReadDataForSingle(void);
 #define PORT_ADC1_CH11_PIN GPIO_PIN_1
 #define PORT_ADC1_CH11_CHANNEL ADC_CHANNEL_11 /*通道和引脚具有对应关系,根据ADCx的不同有些变化*/
 
-#define PORT_ADC1_DMACHANNEL DMA1_Channel1 /*ADC1占据DMA1的通道1，是固定的*/
+#define PORT_ADC1_DMACHANNEL PORT_DMA1_CHANNEL1 /*ADC1占据DMA1的通道1，是固定的*/
 
 #define FUNC_ADC1_PIN_CLK_ENABLE(args) \
     do                                 \
@@ -185,7 +185,7 @@ uint16_t FuncFSMCReadDataForSingle(void);
 /**
  * @description: ADC功能
  */
-extern ADC_HandleTypeDef V_handle_adc1;
+extern ADC_HandleTypeDef V_handle_adc1_ch11;
 
 extern uint16_t V_data_adc1_dma_array[7]; /*ADC有最多16个通道，但DMA1只有7个*/
 
@@ -210,16 +210,62 @@ float FuncADC1GetVoltage(uint32_t m_adc_channel);
 /*********************************ADC功能************************************/
 
 /**
+ * @description: DAC端口配置
+ */
+#define PORT_DAC1_CH1_GROUP GPIOA
+#define PORT_DAC1_CH1_PIN GPIO_PIN_4
+#define PORT_DAC1_CH1_CHANNEL DAC_CHANNEL_1 /*通道和引脚具有对应关系,根据DACx的不同有些变化*/
+
+#define PORT_DAC1_CH2_GROUP GPIOA
+#define PORT_DAC1_CH2_PIN GPIO_PIN_5
+#define PORT_DAC1_CH2_CHANNEL DAC_CHANNEL_2 /*通道和引脚具有对应关系,根据DACx的不同有些变化*/
+
+#define FUNC_DAC1_PIN_CLK_ENABLE(args) \
+    do                                 \
+    {                                  \
+        __HAL_RCC_GPIOA_CLK_ENABLE();  \
+    } while (0U);
+
+#define FUNC_DAC1_CLK_ENABLE(args) __HAL_RCC_DAC_CLK_ENABLE()
+
+#define STATUS_DAC1_INPUTVOLTAGE ((float)3.3) /*ADC输入电压范围，由由VREF-、VREF+、VDDA、VSSA、这四个外部引脚决定*/
+
+#define STATUS_DAC1_ACCURACY ((float)(0x1UL << 12)) /*ADC精度，12位就是4096个等级*/
+/*********************************DAC端口配置************************************/
+
+/**
+ * @description: DAC功能
+ */
+extern DAC_HandleTypeDef V_handle_dac1_ch2;
+
+extern uint16_t V_data_dac1_dma_array[2];
+
+void InitializeDAC1(void);
+static void InitializeDAC1ForPin(void);
+static void InitializeDAC1ForConfig(void);
+
+#define CONFIG_DAC1_ALIGN DAC_ALIGN_12B_R /*DAC对齐方式DAC_ALIGN_8B_R：8位右数据对齐选择的DAC_ALIGN_12B_L：12位左数据对齐选择的DAC_ALIGN_12B_R：选择12位数据右对齐*/
+
+#define CONFIG_DAC1_TRIGGER DAC_TRIGGER_T6_TRGO           /*指定所选DAC通道的外部触发*/
+#define CONFIG_DAC1_OUTPUTBUFFER DAC_OUTPUTBUFFER_DISABLE /*是否启用DAC输出缓冲器*/
+float FuncDAC1SetVoltage(uint32_t m_dac_channel);
+/*********************************DAC功能************************************/
+
+/**
  * @description: DMA端口配置
  */
-#define PORT_DMA1_CHANNEL PORT_ADC1_DMACHANNEL
+#define PORT_DMA1_CH1_CHANNEL DMA1_Channel1
 #define FUNC_DMA1_CLK_ENABLE(args) __HAL_RCC_DMA1_CLK_ENABLE()
+
+#define PORT_DMA2_CH4_CHANNEL DMA2_Channel4
+#define FUNC_DMA2_CLK_ENABLE(args) __HAL_RCC_DMA2_CLK_ENABLE()
 /*********************************DMA端口配置************************************/
 
 /**
  * @description: DMA功能
  */
-extern DMA_HandleTypeDef V_handle_dma1;
+extern DMA_HandleTypeDef V_handle_dma1_ch1;
+extern DMA_HandleTypeDef V_handle_dma2_ch4;
 
 #define CONFIG_DMA1_DIRECTION DMA_PERIPH_TO_MEMORY              /*传输方向*/
 #define CONFIG_DMA1_PERIPHINC DMA_PINC_DISABLE                  /*使能外设地址递增*/
@@ -229,9 +275,21 @@ extern DMA_HandleTypeDef V_handle_dma1;
 #define CONFIG_DMA1_MODE DMA_CIRCULAR                           /*模式选择*/
 #define CONFIG_DMA1_PRIORITY DMA_PRIORITY_MEDIUM                /*优先级*/
 
+#define CONFIG_DMA2_DIRECTION DMA_MEMORY_TO_PERIPH              /*传输方向*/
+#define CONFIG_DMA2_PERIPHINC DMA_PINC_DISABLE                  /*使能外设地址递增*/
+#define CONFIG_DMA2_MEMINC DMA_MINC_ENABLE                      /*使能存储器地址递增*/
+#define CONFIG_DMA2_PERIPHDATAALIGNMENT DMA_PDATAALIGN_HALFWORD /*外设数据宽度*/
+#define CONFIG_DMA2_MEMDATAALIGNMENT DMA_MDATAALIGN_HALFWORD    /*存储器数据宽度*/
+#define CONFIG_DMA2_MODE DMA_CIRCULAR                           /*模式选择*/
+#define CONFIG_DMA2_PRIORITY DMA_PRIORITY_HIGH                  /*优先级*/
+
 void InitializeDMA1(void);
 static void InitializeDMA1ForPin(void);
 static void InitializeDMA1ForConfig(void);
+
+void InitializeDMA2(void);
+static void InitializeDMA2ForPin(void);
+static void InitializeDMA2ForConfig(void);
 /*********************************DMA功能************************************/
 
 /**
@@ -298,7 +356,7 @@ extern TIM_HandleTypeDef V_handle_tim6base;
 #define CONFIG_TIM6_BASE_CLOCKDIVISION NULL             /*时钟分频，设置定时器时钟CK_INT频率与数字滤波器采样时钟频率分频比，Base无效*/
 #define CONFIG_TIM6_BASE_REPETIONCOUNTER NULL           /*重复计数器，属于高级控制寄存器专用寄存器位，利用它可以非常容易控制输出PWM的个数*/
 
-#define CONFIG_TIM6_MASTER_OUTPUTTRIGGER TIM_TRGO_RESET          /*TIM 主模式选择(触发输出)*/
+#define CONFIG_TIM6_MASTER_OUTPUTTRIGGER TIM_TRGO_UPDATE         /*TIM 主模式选择(触发输出)*/
 #define CONFIG_TIM6_MASTER_SLAVEMODE TIM_MASTERSLAVEMODE_DISABLE /*TIM主/从模式*/
 
 extern TIM_HandleTypeDef V_handle_tim1advance;

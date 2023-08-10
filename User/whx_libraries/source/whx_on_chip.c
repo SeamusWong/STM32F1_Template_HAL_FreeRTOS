@@ -119,20 +119,18 @@ uint16_t FuncFSMCReadDataForSingle(void)
 /**
  * @description: ADC区段
  */
-ADC_HandleTypeDef V_handle_adc1;
+ADC_HandleTypeDef V_handle_adc1_ch11;
 
 uint16_t V_data_adc1_dma_array[7] = {0}; /*ADC有最多16个通道，但DMA1只有7个*/
 
 void InitializeADC1(void)
 {
-    InitializeDMA1();
-
     InitializeADC1ForPin();
     InitializeADC1ForConfig();
 
-    __HAL_LINKDMA(&V_handle_adc1, DMA_Handle, V_handle_dma1);
-    // HAL_ADC_Start(&V_handle_adc1);
-    HAL_ADC_Start_DMA(&V_handle_adc1, (uint32_t *)&V_data_adc1_dma_array, CONFIG_ADC1_NBROFCONVERSION);
+    InitializeDMA1();
+    __HAL_LINKDMA(&V_handle_adc1_ch11, DMA_Handle, V_handle_dma1_ch1);
+    HAL_ADC_Start_DMA(&V_handle_adc1_ch11, (uint32_t *)&V_data_adc1_dma_array, CONFIG_ADC1_NBROFCONVERSION);
 }
 
 static void InitializeADC1ForPin(void)
@@ -159,41 +157,110 @@ static void InitializeADC1ForConfig(void)
     config_adc1_clk.AdcClockSelection = CONFIG_ADC1_CLK_ADCCLOCKSELECTION;
     HAL_RCCEx_PeriphCLKConfig(&config_adc1_clk); /*ADC时钟初始化*/
 
-    V_handle_adc1.Instance = ADC1;
-    V_handle_adc1.Init.ContinuousConvMode = CONFIG_ADC1_CONTINUOUSCONVMODE;
-    V_handle_adc1.Init.DataAlign = CONFIG_ADC1_DATAALIGN;
-    V_handle_adc1.Init.DiscontinuousConvMode = CONFIG_ADC1_DISCONTINUOUSCONVMODE;
-    V_handle_adc1.Init.ExternalTrigConv = CONFIG_ADC1_EXTERNALTRIGCONV;
-    V_handle_adc1.Init.NbrOfConversion = CONFIG_ADC1_NBROFCONVERSION;
-    V_handle_adc1.Init.NbrOfDiscConversion = CONFIG_ADC1_NBROFDISCCONVERSION;
-    V_handle_adc1.Init.ScanConvMode = CONFIG_ADC1_SCANCONVMODE;
-    FUNC_CHECK_FOR_HAL(HAL_ADC_Init(&V_handle_adc1), "ERROR ADC_Init");
+    V_handle_adc1_ch11.Instance = ADC1;
+    V_handle_adc1_ch11.Init.ContinuousConvMode = CONFIG_ADC1_CONTINUOUSCONVMODE;
+    V_handle_adc1_ch11.Init.DataAlign = CONFIG_ADC1_DATAALIGN;
+    V_handle_adc1_ch11.Init.DiscontinuousConvMode = CONFIG_ADC1_DISCONTINUOUSCONVMODE;
+    V_handle_adc1_ch11.Init.ExternalTrigConv = CONFIG_ADC1_EXTERNALTRIGCONV;
+    V_handle_adc1_ch11.Init.NbrOfConversion = CONFIG_ADC1_NBROFCONVERSION;
+    V_handle_adc1_ch11.Init.NbrOfDiscConversion = CONFIG_ADC1_NBROFDISCCONVERSION;
+    V_handle_adc1_ch11.Init.ScanConvMode = CONFIG_ADC1_SCANCONVMODE;
+    FUNC_CHECK_FOR_HAL(HAL_ADC_Init(&V_handle_adc1_ch11), "ERROR ADC_Init");
 
     ADC_ChannelConfTypeDef config_adc1_channel;
 
     config_adc1_channel.SamplingTime = CONFIG_ADC1_CH11_SAMPLINGTIME;
     config_adc1_channel.Channel = PORT_ADC1_CH11_CHANNEL;
     config_adc1_channel.Rank = 1;
-    HAL_ADC_ConfigChannel(&V_handle_adc1, &config_adc1_channel);
+    HAL_ADC_ConfigChannel(&V_handle_adc1_ch11, &config_adc1_channel);
 }
 
 float FuncADC1GetVoltage(uint32_t m_adc_channel)
 {
     float result = 0.0;
-    if (m_adc_channel == PORT_ADC1_CH11_CHANNEL)
+    switch (m_adc_channel)
+    {
+    case PORT_ADC1_CH11_CHANNEL:
     {
         result = ((float)V_data_adc1_dma_array[0] / STATUS_ADC1_ACCURACY) * STATUS_ADC1_INPUTVOLTAGE;
     }
+        /* code */
+        break;
+    
+    default:
+        break;
+    }
+    
+    return result;
+}
 
-    else
-        ;
+/**
+ * @description: DAC区段
+ */
+DAC_HandleTypeDef V_handle_dac1_ch2;
+
+uint16_t V_data_dac1_dma_array[2];
+
+void InitializeDAC1(void)
+{
+    InitializeDMA2();
+    InitializeDAC1ForPin();
+    InitializeDAC1ForConfig();
+
+    __HAL_LINKDMA(&V_handle_dac1_ch2, DMA_Handle2, V_handle_dma2_ch4);
+    FUNC_CHECK_FOR_HAL(HAL_DAC_Start_DMA(&V_handle_dac1_ch2, PORT_DAC1_CH2_CHANNEL, (uint32_t *)&V_data_dac1_dma_array[1], 1, CONFIG_DAC1_ALIGN), "ERROR_DAC1_DMA");
+}
+
+static void InitializeDAC1ForPin(void)
+{
+    FUNC_DAC1_PIN_CLK_ENABLE();
+
+    GPIO_InitTypeDef config_dac1_gpio;
+
+    config_dac1_gpio.Mode = GPIO_MODE_ANALOG;
+    config_dac1_gpio.Pull = GPIO_NOPULL;
+    config_dac1_gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    config_dac1_gpio.Pin = PORT_DAC1_CH2_PIN;
+    HAL_GPIO_Init(PORT_DAC1_CH2_GROUP, &config_dac1_gpio);
+}
+
+static void InitializeDAC1ForConfig(void)
+{
+    FUNC_DAC1_CLK_ENABLE();
+
+    V_handle_dac1_ch2.Instance = DAC1;
+    HAL_DAC_Init(&V_handle_dac1_ch2);
+
+    DAC_ChannelConfTypeDef config_dac1_channel;
+
+    config_dac1_channel.DAC_OutputBuffer = CONFIG_DAC1_OUTPUTBUFFER;
+    config_dac1_channel.DAC_Trigger = CONFIG_DAC1_TRIGGER;
+    HAL_DAC_ConfigChannel(&V_handle_dac1_ch2, &config_dac1_channel, PORT_DAC1_CH2_CHANNEL);
+}
+
+float FuncDAC1SetVoltage(uint32_t m_dac_channel)
+{
+    float result = 0.0;
+    switch (m_dac_channel)
+    {
+    case PORT_DAC1_CH2_CHANNEL:
+    {
+        result = ((float)V_data_dac1_dma_array[1] / STATUS_DAC1_ACCURACY) * STATUS_DAC1_INPUTVOLTAGE;
+    }
+    break;
+
+    default:
+        break;
+    }
     return result;
 }
 
 /**
  * @description: DMA区段
  */
-DMA_HandleTypeDef V_handle_dma1;
+DMA_HandleTypeDef V_handle_dma1_ch1;
+DMA_HandleTypeDef V_handle_dma2_ch4;
 
 void InitializeDMA1(void)
 {
@@ -210,16 +277,45 @@ static void InitializeDMA1ForConfig(void)
 {
     FUNC_DMA1_CLK_ENABLE();
 
-    V_handle_dma1.Instance = PORT_DMA1_CHANNEL;
+    V_handle_dma1_ch1.Instance = PORT_DMA1_CH1_CHANNEL;
 
-    V_handle_dma1.Init.Direction = CONFIG_DMA1_DIRECTION;
-    V_handle_dma1.Init.PeriphInc = CONFIG_DMA1_PERIPHINC;
-    V_handle_dma1.Init.MemInc = CONFIG_DMA1_MEMINC;
-    V_handle_dma1.Init.PeriphDataAlignment = CONFIG_DMA1_PERIPHDATAALIGNMENT;
-    V_handle_dma1.Init.MemDataAlignment = CONFIG_DMA1_MEMDATAALIGNMENT;
-    V_handle_dma1.Init.Mode = CONFIG_DMA1_MODE;
-    V_handle_dma1.Init.Priority = CONFIG_DMA1_PRIORITY;
-    FUNC_CHECK_FOR_HAL(HAL_DMA_Init(&V_handle_dma1), "ERROR DMA_Init");
+    V_handle_dma1_ch1.Init.Direction = CONFIG_DMA1_DIRECTION;
+    V_handle_dma1_ch1.Init.PeriphInc = CONFIG_DMA1_PERIPHINC;
+    V_handle_dma1_ch1.Init.MemInc = CONFIG_DMA1_MEMINC;
+    V_handle_dma1_ch1.Init.PeriphDataAlignment = CONFIG_DMA1_PERIPHDATAALIGNMENT;
+    V_handle_dma1_ch1.Init.MemDataAlignment = CONFIG_DMA1_MEMDATAALIGNMENT;
+    V_handle_dma1_ch1.Init.Mode = CONFIG_DMA1_MODE;
+    V_handle_dma1_ch1.Init.Priority = CONFIG_DMA1_PRIORITY;
+    FUNC_CHECK_FOR_HAL(HAL_DMA_Init(&V_handle_dma1_ch1), "ERROR DMA1_Init");
+}
+
+void InitializeDMA2(void)
+{
+    InitializeTIM6Base();
+
+    InitializeDMA2ForPin();
+    InitializeDMA2ForConfig();
+}
+
+static void InitializeDMA2ForPin(void)
+{
+    ;
+}
+
+static void InitializeDMA2ForConfig(void)
+{
+    FUNC_DMA2_CLK_ENABLE();
+
+    V_handle_dma2_ch4.Instance = PORT_DMA2_CH4_CHANNEL;
+
+    V_handle_dma2_ch4.Init.Direction = CONFIG_DMA2_DIRECTION;
+    V_handle_dma2_ch4.Init.PeriphInc = CONFIG_DMA2_PERIPHINC;
+    V_handle_dma2_ch4.Init.MemInc = CONFIG_DMA2_MEMINC;
+    V_handle_dma2_ch4.Init.PeriphDataAlignment = CONFIG_DMA2_PERIPHDATAALIGNMENT;
+    V_handle_dma2_ch4.Init.MemDataAlignment = CONFIG_DMA2_MEMDATAALIGNMENT;
+    V_handle_dma2_ch4.Init.Mode = CONFIG_DMA2_MODE;
+    V_handle_dma2_ch4.Init.Priority = CONFIG_DMA2_PRIORITY;
+    FUNC_CHECK_FOR_HAL(HAL_DMA_Init(&V_handle_dma2_ch4), "ERROR DMA2_Init");
 }
 
 /**
