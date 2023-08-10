@@ -230,6 +230,7 @@ void FuncEEPROM1ClearAll(void);
 
 #define STATUS_FLASH_1_ID 0xEF4017 /*硬件ID，代表了出厂型号*/
 #define STATUS_FLASH_1_PAGESIZE 256
+#define STATUS_FLASH_1_TOTALSIZE ((int)(8 * 0x100000)) /*总容量8M 0x00000000~0x007FFFFF*/
 
 #define CONFIG_FLASH_1_TIMEOUT 1000 /*存储超时*/
 /*********************************FLASH端口配置************************************/
@@ -272,12 +273,15 @@ static void InitializeFLASH1ForPin(void);
 static void InitializeFLASH1ForConfig(void);
 void FuncFLASH1Command(Type_Commd_FLASH m_commd_flash);
 uint32_t FuncFLASH1CallbackDeviceID(void);
+void FuncFLASH1TotalClear(void);
 void FuncFLASH1WriteEnable(void);
 void FuncFLASH1EraseForSectorSingle(uint32_t m_target_mem_ptr);
-void FuncFLASH1EraseForSector(uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
+void FuncFLASH1EraseForSector(uint32_t m_target_mem_ptr, uint32_t m_num_to_write);
 void FuncFLASH1WriteForPage(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
 void FuncFLASH1Write(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
+void FuncFLASH1Fill(uint8_t m_buffer, uint32_t m_target_mem_ptr, uint16_t m_num_to_write);
 void FuncFLASH1Read(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_read);
+void FuncFLASH1ReadForPage(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_read);
 void FuncFLASH1WaitForWrite(void);
 void FuncFLASH1WaitForRead(void);
 /*********************************FLASH功能************************************/
@@ -463,7 +467,7 @@ typedef enum
 
 typedef enum
 {
-    STATUS_LCD_COLOUR_WHITE = 0xFFFF,
+    STATUS_LCD_COLOUR_WHITE = 0xFFFE,
     STATUS_LCD_COLOUR_BLACK = 0x0000,
     STATUS_LCD_COLOUR_GREY = 0xF7DE,
     STATUS_LCD_COLOUR_BLUE = 0x001F,
@@ -475,10 +479,9 @@ typedef enum
     STATUS_LCD_COLOUR_YELLOW = 0xFFE0,
     STATUS_LCD_COLOUR_BRED = 0xF81F,
     STATUS_LCD_COLOUR_GRED = 0xFFE0,
-    STATUS_LCD_COLOUR_GBLUE = 0x07FF
+    STATUS_LCD_COLOUR_GBLUE = 0x07FF,
+    STATUS_LCD_COLOUR_BACKGROUND = STATUS_LCD_COLOUR_BLACK
 } Type_Status_LCD_Colour;
-
-#define STATUS_LCD_COLOUR_BACKGROUND ((Type_Status_LCD_Colour)STATUS_LCD_COLOUR_BLACK)
 
 typedef enum
 {
@@ -511,6 +514,23 @@ typedef enum
     STATUS_LCD_FILL_FULL
 } Type_Status_LCD_Fill;
 
+typedef enum
+{
+    /*FLASH总容量8M 0x00000000~0x007FFFFF,240*320的屏幕每个图层需要75KB，这里分为8个图层每个1M*/
+    /*1M空间可分为512*1024的像素矩阵,颜色数据占sizeof(uint16_t)个字节*/
+    PORT_LCD_LAYER0_FLASHADDRESS = 0x00000000,
+    PORT_LCD_LAYER1_FLASHADDRESS = 0x00100000,
+    PORT_LCD_LAYER2_FLASHADDRESS = 0x00200000,
+    PORT_LCD_LAYER3_FLASHADDRESS = 0x00300000,
+    PORT_LCD_LAYER4_FLASHADDRESS = 0x00400000,
+    PORT_LCD_LAYER5_FLASHADDRESS = 0x00500000,
+    PORT_LCD_LAYER6_FLASHADDRESS = 0x00600000,
+    PORT_LCD_LAYER7_FLASHADDRESS = 0x00700000,
+} Type_Port_LCD_Layer_FlashAddress;
+
+#define CONFIG_LCD_LAYER_PIXELWIDTH 240  /*1M空间可分为512*1024*2的像素矩阵*/
+#define CONFIG_LCD_LAYER_PIXELHEIGHT 320 /*1M空间可分为512*1024*2的像素矩阵*/
+
 void InitializeLCD1(void);
 static void InitializeLCD1ForPin(void);
 static void InitializeLCD1ForConfig(void);
@@ -536,6 +556,13 @@ void FuncLCD1DrawRectangleForCenter(uint16_t m_point_x, uint16_t m_point_y, uint
 uint16_t FuncLCD1GetColour(uint16_t m_point_x, uint16_t m_point_y);
 void FuncLCD1DrawCharForASCII(uint16_t m_point_x, uint16_t m_point_y, char m_char, Type_Status_LCD_Colour m_colour, Type_Font_ASCII *m_font);
 void FuncLCD1DrawStrForASCII(uint16_t m_point_x, uint16_t m_point_y, char *m_str, Type_Status_LCD_Colour m_colour, Type_Font_ASCII *m_font);
+uint16_t FuncLCD1GetColourForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, uint16_t m_point_x, uint16_t m_point_y);
+void FuncLCD1ErasorForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address);
+void FuncLCD1FillForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, uint16_t m_point_x, uint16_t m_point_y, Type_Status_LCD_Colour m_colour, uint32_t m_num_fill);
+void FuncLCD1DrawPointForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, uint16_t m_point_x, uint16_t m_point_y, Type_Status_LCD_Colour m_colour);
+void FuncLCD1DrawFullSereenForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, Type_Status_LCD_Colour m_colour);
+void FuncLCD1DrawLineForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, uint16_t m_point_x, uint16_t m_point_y, uint16_t m_length, Type_Status_LCD_Colour m_colour, Type_Status_LCD_LineDirection m_direction);
+void FuncLCD1DisplayForLayer(void);
 /*********************************LCD功能************************************/
 
 /**

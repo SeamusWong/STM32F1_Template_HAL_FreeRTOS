@@ -378,6 +378,15 @@ uint32_t FuncFLASH1CallbackDeviceID(void)
     return result;
 }
 
+void FuncFLASH1TotalClear(void)
+{
+    FuncFLASH1WriteEnable();
+    FUNC_FLASH_1_NSS_READY();
+    FuncFLASH1Command(COMMD_FLASH_CHIPERASE);
+    FUNC_FLASH_1_NSS_QUIT();
+    FuncFLASH1WaitForWrite();
+}
+
 void FuncFLASH1WriteEnable(void)
 {
     FUNC_FLASH_1_NSS_READY();
@@ -398,16 +407,16 @@ void FuncFLASH1EraseForSectorSingle(uint32_t m_target_mem_ptr)
     FuncFLASH1Command(COMMD_FLASH_SECTORERASE);
 
     uint8_t target_men_ptr_array[3] = {0};
-    target_men_ptr_array[0] = (uint8_t)m_target_mem_ptr >> 8 * 2;
-    target_men_ptr_array[1] = (uint8_t)m_target_mem_ptr >> 8 * 1;
-    target_men_ptr_array[2] = (uint8_t)m_target_mem_ptr >> 8 * 0;
+    target_men_ptr_array[0] = (uint8_t)(m_target_mem_ptr >> 8 * 2);
+    target_men_ptr_array[1] = (uint8_t)(m_target_mem_ptr >> 8 * 1);
+    target_men_ptr_array[2] = (uint8_t)(m_target_mem_ptr >> 8 * 0);
     FUNC_FLASH_1_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
 
     FUNC_FLASH_1_NSS_QUIT();
     FuncFLASH1WaitForWrite();
 }
 
-void FuncFLASH1EraseForSector(uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
+void FuncFLASH1EraseForSector(uint32_t m_target_mem_ptr, uint32_t m_num_to_write)
 {
     if (m_target_mem_ptr % 0x001000 != 0)
     {
@@ -443,9 +452,9 @@ void FuncFLASH1WriteForPage(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, ui
     FuncFLASH1Command(COMMD_FLASH_PAGEPROGRAM);
 
     uint8_t target_men_ptr_array[3] = {0};
-    target_men_ptr_array[0] = (uint8_t)m_target_mem_ptr >> 8 * 2;
-    target_men_ptr_array[1] = (uint8_t)m_target_mem_ptr >> 8 * 1;
-    target_men_ptr_array[2] = (uint8_t)m_target_mem_ptr >> 8 * 0;
+    target_men_ptr_array[0] = (uint8_t)(m_target_mem_ptr >> 8 * 2);
+    target_men_ptr_array[1] = (uint8_t)(m_target_mem_ptr >> 8 * 1);
+    target_men_ptr_array[2] = (uint8_t)(m_target_mem_ptr >> 8 * 0);
     FUNC_FLASH_1_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
 
     FUNC_FLASH_1_TRANSMIT((uint8_t *)m_buffer_ptr, m_num_to_write);
@@ -486,18 +495,70 @@ void FuncFLASH1Write(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t 
     }
 }
 
+void FuncFLASH1Fill(uint8_t m_buffer, uint32_t m_target_mem_ptr, uint16_t m_num_to_write)
+{
+    uint8_t *ptr_buffer = (uint8_t *)malloc(sizeof(uint8_t) * m_num_to_write);
+    if (ptr_buffer == NULL)
+    {
+        FuncErrorAlert();
+    }
+
+    for (int count = 0; count < m_num_to_write; count++)
+    {
+        ptr_buffer[count] = m_buffer;
+    }
+    FuncFLASH1Write(ptr_buffer, m_target_mem_ptr, m_num_to_write);
+    free(ptr_buffer);
+}
+
 void FuncFLASH1Read(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_read)
 {
+
+    if (m_num_to_read < STATUS_FLASH_1_PAGESIZE - (m_target_mem_ptr % STATUS_FLASH_1_PAGESIZE))
+    {
+        FuncFLASH1ReadForPage(m_buffer_ptr, m_target_mem_ptr, m_num_to_read);
+        m_num_to_read -= m_num_to_read;
+    }
+    else
+    {
+        uint16_t temp_num_to_read = STATUS_FLASH_1_PAGESIZE - (m_target_mem_ptr % STATUS_FLASH_1_PAGESIZE);
+        FuncFLASH1ReadForPage(m_buffer_ptr, m_target_mem_ptr, temp_num_to_read);
+        m_buffer_ptr += temp_num_to_read;
+        m_target_mem_ptr += temp_num_to_read;
+        m_num_to_read -= temp_num_to_read;
+    }
+
+    for (uint16_t count_page = (uint16_t)(m_num_to_read / STATUS_FLASH_1_PAGESIZE); count_page > 0; count_page--)
+    {
+        FuncFLASH1ReadForPage(m_buffer_ptr, m_target_mem_ptr, STATUS_FLASH_1_PAGESIZE);
+        m_buffer_ptr += STATUS_FLASH_1_PAGESIZE;
+        m_target_mem_ptr += STATUS_FLASH_1_PAGESIZE;
+        m_num_to_read -= STATUS_FLASH_1_PAGESIZE;
+    }
+
+    if (m_num_to_read > 0)
+    {
+        FuncFLASH1ReadForPage(m_buffer_ptr, m_target_mem_ptr, m_num_to_read);
+    }
+}
+
+void FuncFLASH1ReadForPage(uint8_t *m_buffer_ptr, uint32_t m_target_mem_ptr, uint16_t m_num_to_read)
+{
+    if (m_num_to_read == 0)
+    {
+        return;
+    }
     FUNC_FLASH_1_NSS_READY();
     FuncFLASH1Command(COMMD_FLASH_READDATA);
 
     uint8_t target_men_ptr_array[3] = {0};
-    target_men_ptr_array[0] = (uint8_t)m_target_mem_ptr >> 8 * 2;
-    target_men_ptr_array[1] = (uint8_t)m_target_mem_ptr >> 8 * 1;
-    target_men_ptr_array[2] = (uint8_t)m_target_mem_ptr >> 8 * 0;
+    target_men_ptr_array[0] = (uint8_t)(m_target_mem_ptr >> 8 * 2);
+    target_men_ptr_array[1] = (uint8_t)(m_target_mem_ptr >> 8 * 1);
+    target_men_ptr_array[2] = (uint8_t)(m_target_mem_ptr >> 8 * 0);
     FUNC_FLASH_1_TRANSMIT((uint8_t *)target_men_ptr_array, sizeof(target_men_ptr_array));
 
     FUNC_FLASH_1_RECEIVE(m_buffer_ptr, m_num_to_read);
+    // FuncFLASH1WaitForRead();
     FUNC_FLASH_1_NSS_QUIT();
 }
 
@@ -505,7 +566,7 @@ void FuncFLASH1WaitForWrite(void)
 {
     FUNC_FLASH_1_NSS_READY();
     uint8_t flag = 0x0;
-    uint32_t timeout = CONFIG_FLASH_1_TIMEOUT * (SystemCoreClock / 1000);
+    uint32_t timeout = (uint32_t)CONFIG_FLASH_1_TIMEOUT * (HAL_RCC_GetSysClockFreq() / 1000);
 
     do
     {
@@ -522,7 +583,7 @@ void FuncFLASH1WaitForWrite(void)
 
 void FuncFLASH1WaitForRead(void)
 {
-    ;
+    FuncFLASH1WaitForWrite();
 }
 
 /**
@@ -948,6 +1009,190 @@ void FuncLCD1DrawStrForASCII(uint16_t m_point_x, uint16_t m_point_y, char *m_str
     }
 }
 
+/*FLASH显存操作部分*/
+uint16_t FuncLCD1GetColourForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, uint16_t m_point_x, uint16_t m_point_y)
+{
+    if (m_point_x >= CONFIG_LCD_LAYER_PIXELWIDTH || m_point_y >= CONFIG_LCD_LAYER_PIXELHEIGHT)
+    {
+        return STATUS_LCD_COLOUR_BLACK;
+    }
+    uint16_t result = 0;
+    uint8_t result_uint8[2] = {0};
+
+    uint32_t point_address = m_layer_address;
+    point_address += CONFIG_LCD_LAYER_PIXELWIDTH * m_point_y * sizeof(uint16_t);
+    point_address += m_point_x * sizeof(uint16_t);
+    FuncFLASH1Read(result_uint8, point_address, sizeof(result_uint8));
+    // printf("%X,%X,%X\n", point_address,result_uint8[0], result_uint8[1]);
+
+    result += result_uint8[0] << (8 * 1);
+    result += result_uint8[1] << (8 * 0);
+    return result;
+}
+
+void FuncLCD1ErasorForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address)
+{
+    uint32_t erasor_address = m_layer_address;
+    FuncFLASH1EraseForSector(erasor_address, CONFIG_LCD_LAYER_PIXELHEIGHT * CONFIG_LCD_LAYER_PIXELWIDTH * sizeof(uint16_t));
+}
+
+void FuncLCD1FillForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, uint16_t m_point_x, uint16_t m_point_y, Type_Status_LCD_Colour m_colour, uint32_t m_num_fill)
+{
+    m_layer_address += CONFIG_LCD_LAYER_PIXELWIDTH * m_point_y * sizeof(uint16_t);
+    m_layer_address += m_point_x * sizeof(uint16_t);
+
+    while (m_num_fill > (STATUS_FLASH_1_PAGESIZE / 2))
+    {
+        uint8_t *data_fill = (uint8_t *)malloc(sizeof(uint16_t) * (STATUS_FLASH_1_PAGESIZE / 2));
+        if (data_fill == NULL)
+        {
+            FuncErrorAlert();
+        }
+
+        for (int count = 0; count < sizeof(uint16_t) * (STATUS_FLASH_1_PAGESIZE / 2); count += ((sizeof(uint16_t)) / (sizeof(uint8_t))))
+        {
+            data_fill[count] = (m_colour >> (8 * 1));
+            data_fill[count + 1] = (m_colour >> (8 * 0));
+        }
+        FuncFLASH1WriteForPage(data_fill, m_layer_address, (STATUS_FLASH_1_PAGESIZE / 2) * ((sizeof(uint16_t)) / (sizeof(uint8_t))));
+        free(data_fill);
+
+        m_layer_address += (STATUS_FLASH_1_PAGESIZE / 2) * sizeof(uint16_t);
+        m_num_fill -= (STATUS_FLASH_1_PAGESIZE / 2);
+    }
+
+    uint8_t *data_fill = (uint8_t *)malloc(sizeof(uint16_t) * m_num_fill);
+    if (data_fill == NULL)
+    {
+        FuncErrorAlert();
+    }
+
+    for (int count = 0; count < sizeof(uint16_t) * m_num_fill; count += ((sizeof(uint16_t)) / (sizeof(uint8_t))))
+    {
+        data_fill[count] = (m_colour >> (8 * 1));
+        data_fill[count + 1] = (m_colour >> (8 * 0));
+    }
+    FuncFLASH1WriteForPage(data_fill, m_layer_address, m_num_fill * ((sizeof(uint16_t)) / (sizeof(uint8_t))));
+    free(data_fill);
+}
+
+void FuncLCD1DrawPointForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, uint16_t m_point_x, uint16_t m_point_y, Type_Status_LCD_Colour m_colour)
+{
+    uint32_t point_address = m_layer_address;
+    point_address += CONFIG_LCD_LAYER_PIXELWIDTH * m_point_y * sizeof(uint16_t);
+    point_address += m_point_x * sizeof(uint16_t);
+
+    uint8_t point_colour[2] = {0};
+    point_colour[0] = (uint8_t)(m_colour >> (8 * 1));
+    point_colour[1] = (uint8_t)(m_colour >> (8 * 0));
+
+    FuncFLASH1WriteForPage(point_colour, point_address, sizeof(point_colour));
+}
+
+void FuncLCD1DrawFullSereenForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, Type_Status_LCD_Colour m_colour)
+{
+    FuncLCD1FillForLayer(m_layer_address, 0, 0, m_colour, CONFIG_LCD_LAYER_PIXELHEIGHT * CONFIG_LCD_LAYER_PIXELWIDTH);
+}
+
+void FuncLCD1DrawLineForLayer(Type_Port_LCD_Layer_FlashAddress m_layer_address, uint16_t m_point_x, uint16_t m_point_y, uint16_t m_length, Type_Status_LCD_Colour m_colour, Type_Status_LCD_LineDirection m_direction)
+{
+    switch (m_direction)
+    {
+    case STATUS_LCD_LINEDIRECTION_HORIZONTAL:
+    {
+        // FuncLCD1FillForLayer(m_layer_address, m_point_x, m_point_y, m_colour, m_length);
+        for (int count = 0; count < m_length; count++)
+        {
+            FuncLCD1DrawPointForLayer(m_layer_address, m_point_x, m_point_y, m_colour);
+            m_point_x++;
+        }
+    }
+    break;
+
+    case STATUS_LCD_LINEDIRECTION_VERTICAL:
+    {
+        for (int count = 0; count < m_length; count++)
+        {
+            FuncLCD1DrawPointForLayer(m_layer_address, m_point_x, m_point_y, m_colour);
+            m_point_y++;
+        }
+    }
+    break;
+
+    default:
+        break;
+    }
+}
+
+void FuncLCD1DisplayForLayer(void)
+{
+    // uint8_t data_layer_row[sizeof(uint16_t) * STATUS_LCD_PIXELWIDTH] = {0};
+    uint8_t *data_layer_row = (uint8_t *)calloc(sizeof(uint16_t), STATUS_LCD_PIXELWIDTH);
+    if (data_layer_row == NULL)
+    {
+        FuncErrorAlert();
+    }
+    // uint8_t *data_layer_row_temp = (uint8_t *)calloc(sizeof(uint16_t), STATUS_LCD_PIXELWIDTH);
+    uint8_t data_layer_row_temp[sizeof(uint16_t) * STATUS_LCD_PIXELWIDTH] = {0};
+    uint16_t length_layer_row = (uint16_t)(STATUS_LCD_PIXELWIDTH * sizeof(uint16_t));
+
+    for (uint16_t count_y = 0; count_y < STATUS_LCD_PIXELHEIGHT; count_y++)
+    {
+        for (Type_Port_LCD_Layer_FlashAddress count_layer = PORT_LCD_LAYER0_FLASHADDRESS; count_layer <= PORT_LCD_LAYER7_FLASHADDRESS; count_layer += (PORT_LCD_LAYER1_FLASHADDRESS - PORT_LCD_LAYER0_FLASHADDRESS))
+        {
+            uint32_t address_layer_row = count_layer + (count_y * CONFIG_LCD_LAYER_PIXELWIDTH * sizeof(uint16_t));
+            FuncFLASH1Read(data_layer_row_temp, address_layer_row, length_layer_row);
+            // printf("address_layer_row = %d,count_y=%d\n", address_layer_row, count_y);
+            for (int count = 0; count < length_layer_row; count += ((sizeof(uint16_t)) / (sizeof(uint8_t))))
+            {
+                if (data_layer_row_temp[count] == 0xFF && data_layer_row_temp[count + 1] == 0xFF)
+                {
+                    continue;
+                }
+                data_layer_row[count] = data_layer_row_temp[count];
+                data_layer_row[count + 1] = data_layer_row_temp[count + 1];
+            }
+        }
+
+        for (uint16_t count_x = 0; count_x < STATUS_LCD_PIXELWIDTH; count_x++)
+        {
+            uint16_t colour_point = 0;
+            uint8_t colour_point_temp[2] = {0};
+
+            colour_point_temp[0] = data_layer_row[count_x * sizeof(uint16_t)];
+            colour_point_temp[1] = data_layer_row[1 + count_x * sizeof(uint16_t)];
+            colour_point += (colour_point_temp[0] << (8 * 1));
+            colour_point += (colour_point_temp[1] << (8 * 0));
+
+            if (colour_point != 0 && colour_point != 0xFFFF)
+            {
+                FuncLCD1DrawPoint(count_x, count_y, colour_point);
+            }
+        }
+
+        // FuncLCD1SetWindow(0, count_y, STATUS_LCD_PIXELWIDTH, 1);
+        // FuncLCD1Command(COMMD_LCD_RAMWR);
+        // for (int count = 0; count < STATUS_LCD_PIXELWIDTH; count++)
+        // {
+        //     uint16_t colour_point = 0;
+        //     uint8_t colour_point_temp[2] = {0};
+
+        //     colour_point_temp[0] = data_layer_row[count * sizeof(uint16_t)];
+        //     colour_point_temp[1] = data_layer_row[1 + count * sizeof(uint16_t)];
+        //     colour_point += (colour_point_temp[0] << (8 * 1));
+        //     colour_point += (colour_point_temp[1] << (8 * 0));
+        //     FuncLCD1WriteDataForSingle(colour_point);
+        // }
+
+        for (int count = 0; count < length_layer_row; count++)
+        {
+            data_layer_row[count] = 0;
+        }
+    }
+    free(data_layer_row);
+    // free(data_layer_row_temp);
+}
+
 /**
  * @description: 电容按键区段
  */
@@ -1002,7 +1247,7 @@ uint16_t FuncCapacitiveButton1GetPulseWidth(void)
     {
         FuncCapacitiveButton1Reset();
 
-        FUNC_WAITSTATUS_TIMEOUT(V_data_tim5general_ic_ch2.flag_start, 1, 10, "ERROR Timeout_CapacitiveButton");
+        FUNC_WAITSTATUS_TIMEOUT(V_data_tim5general_ic_ch2.flag_start, 1, 20, "ERROR Timeout_CapacitiveButton");
 
         result += FuncTIM5GeneralGetICValue(PORT_TIM5GENERAL_CHANNEL_2);
     }
@@ -1032,6 +1277,8 @@ Type_Status_CapacitiveButton FuncCapacitiveButton1GetStatus(void)
  */
 void FuncErrorAlert(void)
 {
+    InitializeLED1();
+    InitializeBEEP1();
     // FuncBEEP1SetStatus(STATUS_BEEP_ON);
     FuncLED1SetColour(STATUS_LED_COLOUR_RED);
     while (1)
