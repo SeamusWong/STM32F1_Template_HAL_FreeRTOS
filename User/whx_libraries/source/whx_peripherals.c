@@ -965,23 +965,27 @@ void FuncLCD1DrawCharForASCII(uint16_t m_point_x, uint16_t m_point_y, char m_cha
     uint8_t char_size = (m_font->width * m_font->height) / 8;                  /*字模所占字节数*/
     char *char_ptr = (char *)(&m_font->font_table[char_position * char_size]); /*字模首个点地址*/
 
-    FuncLCD1SetWindow(m_point_x, m_point_y, m_font->width, m_font->height);
-    FuncLCD1Command(COMMD_LCD_RAMWR);
+    // FuncLCD1SetWindow(m_point_x, m_point_y, m_font->width, m_font->height);
+    // FuncLCD1Command(COMMD_LCD_RAMWR);
     for (uint8_t count_byte = 0; count_byte < char_size; count_byte++)
     {
         for (uint8_t count_bit = 0; count_bit < 8; count_bit++)
         {
             uint8_t char_point_position_y = m_point_y + ((count_byte * 8 + count_bit) / m_font->width);
             uint8_t char_point_position_x = m_point_x + ((count_byte * 8 + count_bit) % m_font->width);
-            uint16_t char_point_colour = FuncLCD1GetColour(char_point_position_x, char_point_position_y);
-            FuncLCD1Command(COMMD_LCD_RAMWR);
+            // uint16_t char_point_colour = FuncLCD1GetColour(char_point_position_x, char_point_position_y);
+            // FuncLCD1Command(COMMD_LCD_RAMWR);
+            // if (char_ptr[count_byte] & (0x80 >> count_bit))
+            // {
+            //     FuncLCD1WriteDataForSingle(m_colour);
+            // }
+            // else
+            // {
+            //     FuncLCD1WriteDataForSingle(char_point_colour);
+            // }
             if (char_ptr[count_byte] & (0x80 >> count_bit))
             {
-                FuncLCD1WriteDataForSingle(m_colour);
-            }
-            else
-            {
-                FuncLCD1WriteDataForSingle(char_point_colour);
+                FuncLCD1DrawPoint(char_point_position_x, char_point_position_y, m_colour);
             }
         }
     }
@@ -1247,7 +1251,7 @@ uint16_t FuncCapacitiveButton1GetPulseWidth(void)
     {
         FuncCapacitiveButton1Reset();
 
-        FUNC_WAITSTATUS_TIMEOUT(V_data_tim5general_ic_ch2.flag_start, 1, 20, "ERROR Timeout_CapacitiveButton");
+        FUNC_WAITSTATUS_TIMEOUT(V_data_tim5general_ic_ch2.flag_start, 1, 50, "ERROR Timeout_CapacitiveButton");
 
         result += FuncTIM5GeneralGetICValue(PORT_TIM5GENERAL_CHANNEL_2);
     }
@@ -1270,6 +1274,25 @@ Type_Status_CapacitiveButton FuncCapacitiveButton1GetStatus(void)
     {
         return STATUS_CAPACITIVEBUTTON_OFF;
     }
+}
+
+/**
+ * @description: WiFI ESP8266区段
+ */
+void InitializeESP8266(void)
+{
+    InitializeUSART3();
+
+    InitializeESP8266ForPin();
+    InitializeESP8266ForConfig();
+}
+
+void InitializeESP8266ForPin(void)
+{
+}
+
+void InitializeESP8266ForConfig(void)
+{
 }
 
 /**

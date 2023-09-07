@@ -2,7 +2,6 @@
 #define H_WHX_COMMUNICATE_
 
 #include "whx_libraries_all.h"
-#include "whx_on_chip.h"
 
 /**
  * @description: USART端口配置
@@ -21,8 +20,8 @@
 #define CONFIG_USART1_PARITY USART_PARITY_ODD          /*校验状态*/
 #define CONFIG_USART1_HWCONTROL UART_HWCONTROL_NONE    /*硬件流控模式状态*/
 #define CONFIG_USART1_CLKLASTBIT USART_LASTBIT_DISABLE /*是否使能接收器采样最后一位数据*/
-#define CONFIG_USART1_CLKPHASE NULL       /*数据采样在上升/下降沿进行*/
-#define CONFIG_USART1_CLKPOLARITY NULL   /*使用正/负极性的时钟信号*/
+#define CONFIG_USART1_CLKPHASE NO_USE                  /*数据采样在上升/下降沿进行*/
+#define CONFIG_USART1_CLKPOLARITY NO_USE               /*使用正/负极性的时钟信号*/
 #define CONFIG_USART1_TIMEOUT 1000U                    /*超时时间*/
 
 #define FUNC_USART1_PIN_CLK_ENABLE(args) \
@@ -38,18 +37,56 @@
 
 #define FUNC_USART1_CLK_ENABLE() __HAL_RCC_USART1_CLK_ENABLE()
 #define FUNC_USART1_CLK_DISABLE() __HAL_RCC_USART1_CLK_DISABLE()
+
+#define PORT_USART3_RX_GROUP GPIOB
+#define PORT_USART3_RX_PIN GPIO_PIN_11
+
+#define PORT_USART3_TX_GROUP GPIOB
+#define PORT_USART3_TX_PIN GPIO_PIN_10
+
+#define CONFIG_USART3_INSTANCE USART3                  /*寄存器地址*/
+#define CONFIG_USART3_MODE USART_MODE_TX_RX            /*工作模式*/
+#define CONFIG_USART3_BAUDRATE 115200                  /*波特率*/
+#define CONFIG_USART3_WORDLENGTH USART_WORDLENGTH_8B   /*字长*/
+#define CONFIG_USART3_STOPBITS USART_STOPBITS_1        /*停止位*/
+#define CONFIG_USART3_PARITY USART_PARITY_NONE         /*校验状态*/
+#define CONFIG_USART3_HWCONTROL UART_HWCONTROL_NONE    /*硬件流控模式状态*/
+#define CONFIG_USART3_CLKLASTBIT USART_LASTBIT_DISABLE /*是否使能接收器采样最后一位数据*/
+#define CONFIG_USART3_CLKPHASE NO_USE                  /*数据采样在上升/下降沿进行*/
+#define CONFIG_USART3_CLKPOLARITY NO_USE               /*使用正/负极性的时钟信号*/
+#define CONFIG_USART3_TIMEOUT 1000U                    /*超时时间*/
+
+#define FUNC_USART3_PIN_CLK_ENABLE(args) \
+    do                                   \
+    {                                    \
+        __HAL_RCC_GPIOB_CLK_ENABLE();    \
+    } while (0U);
+#define FUNC_USART3_PIN_CLK_DISABLE(args) \
+    do                                    \
+    {                                     \
+        __HAL_RCC_GPIOB_CLK_DISABLE();    \
+    } while (0U);
+
+#define FUNC_USART3_CLK_ENABLE() __HAL_RCC_USART3_CLK_ENABLE()
+#define FUNC_USART3_CLK_DISABLE() __HAL_RCC_USART3_CLK_DISABLE()
 /*********************************USART端口配置************************************/
 
 /**
  * @description: USART功能
  */
 extern UART_HandleTypeDef V_handle_usart1;
+extern UART_HandleTypeDef V_handle_usart3;
 
 void InitializeUSART1(void);
 void InitializeUSART1ForPin(void);
 void InitializeUSART1ForConfig(void);
 int32_t fputc(int32_t m_char, FILE *m_stream);
 int32_t fgetc(FILE *m_stream);
+
+void InitializeUSART3(void);
+void InitializeUSART3ForPin(void);
+void InitializeUSART3ForConfig(void);
+
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *m_handle);
 /*********************************USART功能************************************/
 
@@ -63,14 +100,14 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *m_handle);
 #define PORT_IIC1_SDA_PIN GPIO_PIN_7
 
 #define FUNC_IIC1_PIN_CLK_ENABLE(args) \
-    do                                  \
-    {                                   \
-        __HAL_RCC_GPIOB_CLK_ENABLE();   \
+    do                                 \
+    {                                  \
+        __HAL_RCC_GPIOB_CLK_ENABLE();  \
     } while (0U);
 #define FUNC_IIC1_PIN_CLK_DISABLE(args) \
-    do                                   \
-    {                                    \
-        __HAL_RCC_GPIOB_CLK_DISABLE();   \
+    do                                  \
+    {                                   \
+        __HAL_RCC_GPIOB_CLK_DISABLE();  \
     } while (0U);
 
 #define FUNC_IIC1_CLK_ENABLE(args) __HAL_RCC_I2C1_CLK_ENABLE(args)
@@ -79,7 +116,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *m_handle);
 #define FUNC_IIC1_FORCE_RESET(args) __HAL_RCC_I2C1_FORCE_RESET(args)
 #define FUNC_IIC1_RELEASE_RESET(args) __HAL_RCC_I2C1_RELEASE_RESET(args)
 
-#define CONFIG_IIC1_TIMEOUT 1000                                   /*超时时间*/
+#define CONFIG_IIC1_TIMEOUT 1000 /*超时时间*/
 
 #define CONFIG_IIC1_ADDRESSINGMODE I2C_ADDRESSINGMODE_7BIT  /*寻址模式7/10位*/
 #define CONFIG_IIC1_CLOCKSPEED 400000                       /*时钟频率<400kHZ*/
@@ -100,8 +137,8 @@ void InitializeIIC1(void);
 void InitializeIIC1ForPin(void);
 void InitializeIIC1ForConfig(void);
 void FuncIIC1WaitForReady(uint16_t m_target_address);
-void FuncIIC1Transmit(uint16_t m_target_address,uint8_t *m_buffer_ptr, uint16_t m_num_to_write);
-void FuncIIC1Receive(uint16_t m_target_address,uint8_t *m_buffer_ptr, uint16_t m_num_to_read);
+void FuncIIC1Transmit(uint16_t m_target_address, uint8_t *m_buffer_ptr, uint16_t m_num_to_write);
+void FuncIIC1Receive(uint16_t m_target_address, uint8_t *m_buffer_ptr, uint16_t m_num_to_read);
 /**
  * @description:指定位置写入
  * @param {uint8_t} *m_buffer_ptr 准备发送的缓冲区指针
@@ -109,7 +146,7 @@ void FuncIIC1Receive(uint16_t m_target_address,uint8_t *m_buffer_ptr, uint16_t m
  * @param {uint8_t} m_num_to_write  要写入的字节数
  * @return {*}
  */
-void FuncIIC1WriteForMemory(uint16_t m_target_address,uint16_t m_target_pagesize,uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_write);
+void FuncIIC1WriteForMemory(uint16_t m_target_address, uint16_t m_target_pagesize, uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_write);
 /**
  * @description:指定位置读取
  * @param {uint8_t} *m_buffer_ptr 准备接受的缓冲区指针
@@ -117,7 +154,7 @@ void FuncIIC1WriteForMemory(uint16_t m_target_address,uint16_t m_target_pagesize
  * @param {uint8_t} m_num_to_read  要读取的字节数
  * @return {*}
  */
-void FuncIIC1ReadForMemory(uint16_t m_target_address,uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_read);
+void FuncIIC1ReadForMemory(uint16_t m_target_address, uint8_t *m_buffer_ptr, uint8_t m_target_mem_ptr, uint16_t m_num_to_read);
 /*********************************I2C功能************************************/
 
 /**

@@ -2,9 +2,7 @@
 #define H_WHX_INTERRUPTS_
 
 #include "whx_libraries_all.h"
-#include "whx_communicate.h"
 #include "whx_peripherals.h"
-#include "whx_on_chip.h"
 
 /**
  * @description: 引脚中断端口配置

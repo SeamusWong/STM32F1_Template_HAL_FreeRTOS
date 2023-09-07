@@ -152,13 +152,6 @@ static void Creator(void)
                                       (UBaseType_t)2,                                 /* 任务的优先级 */
                                       (TaskHandle_t *)&V_handle_task_ScreenShowInfo), /* 任务控制块指针 */
                           "ERROR_TaskCreate_TaskScreenShowInfo");
-  FUNC_CHECK_FOR_FREERTOS(xTaskCreate((TaskFunction_t)TaskScreenSystemTime,             /* 任务入口函数 */
-                                      (const char *)"TaskScreenSystemTime",             /* 任务名字 */
-                                      (uint16_t)512,                                    /* 任务栈大小 */
-                                      (void *)NULL,                                     /* 任务入口函数参数 */
-                                      (UBaseType_t)3,                                   /* 任务的优先级 */
-                                      (TaskHandle_t *)&V_handle_task_ScreenSystemTime), /* 任务控制块指针 */
-                          "ERROR_TaskCreate_TaskScreenSystemTime");
   FUNC_CHECK_FOR_FREERTOS(xTaskCreate((TaskFunction_t)TaskCapacitiveButtonLED,             /* 任务入口函数 */
                                       (const char *)"TaskCapacitiveButtonLED",             /* 任务名字 */
                                       (uint16_t)512,                                       /* 任务栈大小 */
@@ -185,31 +178,27 @@ static void Creator(void)
   /**
    * @description: 消息队列创建区
    */
-  V_handle_queue_screen_adc = xQueueCreate(5, sizeof(Type_Queue_Screen_ADC));
+  V_handle_queue_screen_adc = xQueueCreate((UBaseType_t)CONFIG_QUEUE_SCREEN_ADC_SIZE,   /*消息队列长度*/
+                                           (UBaseType_t)sizeof(Type_Queue_Screen_ADC)); /*消息占用空间*/
   if (V_handle_queue_screen_adc == NULL)
   {
     printf("ERROR_QueueCreate_V_handle_queue_screen_adc\n");
     FuncErrorAlert();
   }
 
-  V_handle_queue_screen_capacitivebutton = xQueueCreate(5, sizeof(Type_Queue_Screen_CapacitiveButton));
+  V_handle_queue_screen_capacitivebutton = xQueueCreate((UBaseType_t)CONFIG_QUEUE_SCREEN_CAPACITIVEBUTTON_SIZE,   /*消息队列长度*/
+                                                        (UBaseType_t)sizeof(Type_Queue_Screen_CapacitiveButton)); /*消息占用空间*/
   if (V_handle_queue_screen_adc == NULL)
   {
     printf("ERROR_QueueCreate_V_handle_queue_screen_capacitivebutton\n");
     FuncErrorAlert();
   }
 
-  V_handle_queue_screen_tim5general = xQueueCreate(5, sizeof(Type_Queue_Screen_Tim5General));
+  V_handle_queue_screen_tim5general = xQueueCreate((UBaseType_t)CONFIG_QUEUE_SCREEN_TIM5GENERAL_SIZE,   /*消息队列长度*/
+                                                   (UBaseType_t)sizeof(Type_Queue_Screen_Tim5General)); /*消息占用空间*/
   if (V_handle_queue_screen_adc == NULL)
   {
     printf("ERROR_QueueCreate_V_handle_queue_screen_tim5general\n");
-    FuncErrorAlert();
-  }
-
-  V_handle_queue_screen_systemtime = xQueueCreate(5, sizeof(Type_Queue_Screen_SystemTime));
-  if (V_handle_queue_screen_systemtime == NULL)
-  {
-    printf("ERROR_QueueCreate_V_handle_queue_screen_systemtime\n");
     FuncErrorAlert();
   }
   /*********************************消息队列创建区*********************************/
@@ -224,6 +213,25 @@ static void Creator(void)
     FuncErrorAlert();
   }
   /*********************************事件组创建区*********************************/
+
+  /**
+   * @description: 定时器创建区
+   */
+  V_handle_timer_systemtime = xTimerCreate((const char *)"TimerSystemTime",                     /*软件定时器名字*/
+                                           (TickType_t)pdMS_TO_TICKS(1000),                     /*定时器的周期，单位为系统节拍周期*/
+                                           (UBaseType_t)pdTRUE,                                 /*pdTRUE 周期模式，pdFALSE 单次模式（运行一次后进入休眠态）*/
+                                           (void *)1,                                           /*软件定时器ID，一个回调函数根据ID号来处理不同的软件定时器*/
+                                           (TimerCallbackFunction_t)TimerTaskScreenSystemTime); /*回调函数*/
+  if (V_handle_timer_systemtime == NULL)
+  {
+    printf("ERROR_TimerCreate_V_handle_timer_systemtime\n");
+    FuncErrorAlert();
+  }
+  else
+  {
+    xTimerStart(V_handle_timer_systemtime, pdMS_TO_TICKS(1000));
+  }
+  /*********************************定时器创建区*********************************/
 
   /**
    * @description: Others

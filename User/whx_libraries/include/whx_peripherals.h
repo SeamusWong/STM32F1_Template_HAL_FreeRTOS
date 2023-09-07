@@ -597,6 +597,34 @@ Type_Status_CapacitiveButton FuncCapacitiveButton1GetStatus(void);
 /*********************************电容按键端口配置************************************/
 
 /**
+ * @description: 编码器电机控制L298N
+ */
+#define PORT_MOTOR1_IN1_GROUP GPIOG
+#define PORT_MOTOR1_IN1_PIN GPIO_PIN_1
+
+#define PORT_MOTOR1_IN2_GROUP GPIOG
+#define PORT_MOTOR1_IN2_PIN GPIO_PIN_3
+
+#define PORT_MOTOR1_PWM_GROUP GPIOG
+#define PORT_MOTOR1_PWM_PIN GPIO_PIN_5
+/*********************************END************************************/
+
+/**
+ * @description: WiFi ESP8266模块
+ */
+#define PORT_ESP8266_RX_GROUP  PORT_USART3_RX_GROUP
+#define PORT_ESP8266_RX_PIN PORT_USART3_RX_PIN
+
+#define PORT_ESP8266_TX_GROUP PORT_USART3_TX_GROUP
+#define PORT_ESP8266_TX_PIN PORT_USART3_TX_PIN
+
+void InitializeESP8266(void);
+static void InitializeESP8266ForPin(void);
+static void InitializeESP8266ForConfig(void);
+
+/*********************************WiFi ESP8266模块************************************/
+
+/**
  * @description: Others
  */
 void FuncErrorAlert(void);

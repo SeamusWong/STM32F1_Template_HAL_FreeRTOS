@@ -42,9 +42,53 @@ void InitializeUSART1ForConfig(void)
     // V_handle_usart1.Init.CLKLastBit = CONFIG_USART1_CLKLASTBIT;
     // V_handle_usart1.Init.CLKPhase = CONFIG_USART1_CLKPHASE;
     // V_handle_usart1.Init.CLKPolarity = CONFIG_USART1_CLKPOLARITY;
-    FUNC_CHECK_FOR_HAL(HAL_UART_Init(&V_handle_usart1), "ERROR UART_Init");
+    FUNC_CHECK_FOR_HAL(HAL_UART_Init(&V_handle_usart1), "ERROR USART1_Init");
 
     __HAL_UART_ENABLE(&V_handle_usart1);
+}
+
+void InitializeUSART3(void)
+{
+    InitializeUSART3ForPin();
+    InitializeUSART3ForConfig();
+}
+
+void InitializeUSART3ForPin(void)
+{
+    FUNC_USART3_PIN_CLK_ENABLE();
+
+    GPIO_InitTypeDef config_usart3_gpio;
+
+    config_usart3_gpio.Pull = GPIO_PULLUP;
+    config_usart3_gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+    config_usart3_gpio.Mode = GPIO_MODE_AF_PP; /* 配置Tx引脚为复用功能  */
+    config_usart3_gpio.Pin = PORT_USART3_TX_PIN;
+    HAL_GPIO_Init(PORT_USART3_TX_GROUP, &config_usart3_gpio);
+
+    config_usart3_gpio.Pin = PORT_USART3_RX_PIN;
+    config_usart3_gpio.Mode = GPIO_MODE_AF_INPUT; /* 配置Rx引脚为复用功能 */
+    HAL_GPIO_Init(PORT_USART3_RX_GROUP, &config_usart3_gpio);
+}
+
+UART_HandleTypeDef V_handle_usart3;
+
+void InitializeUSART3ForConfig(void)
+{
+    FUNC_USART3_CLK_ENABLE();
+
+    V_handle_usart3.Instance = CONFIG_USART3_INSTANCE;
+    V_handle_usart3.Init.Mode = CONFIG_USART3_MODE;
+    V_handle_usart3.Init.BaudRate = CONFIG_USART3_BAUDRATE;
+    V_handle_usart3.Init.WordLength = CONFIG_USART3_WORDLENGTH;
+    V_handle_usart3.Init.StopBits = CONFIG_USART3_STOPBITS;
+    V_handle_usart3.Init.Parity = CONFIG_USART3_PARITY;
+    V_handle_usart3.Init.HwFlowCtl = CONFIG_USART3_HWCONTROL;
+    // V_handle_usart3.Init.CLKLastBit = CONFIG_USART3_CLKLASTBIT;
+    // V_handle_usart3.Init.CLKPhase = CONFIG_USART3_CLKPHASE;
+    // V_handle_usart3.Init.CLKPolarity = CONFIG_USART3_CLKPOLARITY;
+    FUNC_CHECK_FOR_HAL(HAL_UART_Init(&V_handle_usart3), "ERROR USART3_Init");
+
+    __HAL_UART_ENABLE(&V_handle_usart3);
 }
 
 /**
@@ -53,11 +97,6 @@ void InitializeUSART1ForConfig(void)
 int32_t fputc(int32_t m_char, FILE *m_stream)
 {
     HAL_UART_Transmit(&V_handle_usart1, (uint8_t *)&m_char, sizeof((uint8_t)m_char), CONFIG_USART1_TIMEOUT);
-
-    FuncLED1SetColour(STATUS_LED_COLOUR_YELLOW);
-    FUNC_DELAY_US_FOR_ALL(10);
-    FuncLED1SetColour(STATUS_LED_COLOUR_BLACK);
-    FUNC_DELAY_US_FOR_ALL(10);
     return 0;
 }
 
@@ -68,11 +107,6 @@ int32_t fgetc(FILE *m_stream)
 {
     uint8_t m_char;
     HAL_UART_Receive(&V_handle_usart1, (uint8_t *)&m_char, sizeof((uint8_t)m_char), CONFIG_USART1_TIMEOUT);
-
-    FuncLED1SetColour(STATUS_LED_COLOUR_BLUE);
-    FUNC_DELAY_US_FOR_ALL(10);
-    FuncLED1SetColour(STATUS_LED_COLOUR_BLACK);
-    FUNC_DELAY_US_FOR_ALL(10);
     return (int32_t)m_char;
 }
 

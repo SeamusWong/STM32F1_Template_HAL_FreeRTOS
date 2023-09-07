@@ -7,7 +7,6 @@
  */
 TaskHandle_t V_handle_task_DeviceStart = NULL;
 TaskHandle_t V_handle_task_IdleLED = NULL;
-TaskHandle_t V_handle_task_ScreenSystemTime = NULL;
 TaskHandle_t V_handle_task_ScreenShowInfo = NULL;
 TaskHandle_t V_handle_task_CapacitiveButtonLED = NULL;
 TaskHandle_t V_handle_task_Tim5General = NULL;
@@ -27,8 +26,14 @@ QueueHandle_t V_handle_queue_screen_systemtime = NULL;
 /**
  * @description: 事件组句柄
  */
-EventGroupHandle_t V_handle_event_screen_refresh; /*高8位不能用于设置事件，所以32韦德事件组变量只能使用24个事件*/
+EventGroupHandle_t V_handle_event_screen_refresh; /*高8位不能用于设置事件，所以32位的事件组变量只能使用24个事件*/
 /*********************************事件组句柄*********************************/
+
+/**
+ * @description: 定时器句柄
+ */
+TimerHandle_t V_handle_timer_systemtime = NULL;
+/*********************************定时器句柄*********************************/
 
 void TaskDeviceStart(void)
 {
@@ -70,7 +75,7 @@ void TaskIdleLED(void)
         if (FuncLED1ReadColour() == STATUS_LED_COLOUR_BLACK)
         {
             FuncLED1SetColour(STATUS_LED_COLOUR_GREEN);
-            vTaskDelay(V_TASK_DELAY_TIME(10));
+            vTaskDelay(V_TASK_DELAY_TIME(5));
             FuncLED1SetColour(STATUS_LED_COLOUR_BLACK);
         }
         vTaskDelay(V_TASK_DELAY_TIME(2000));
@@ -133,47 +138,6 @@ void TaskScreenShowInfo(void)
             }
             xEventGroupClearBits(V_handle_event_screen_refresh, EVENT_SCREEN_REFRESH_TIM5GENERAL);
         }
-
-        if (events_list & EVENT_SCREEN_REFRESH_SYSTEMTIME)
-        {
-            Type_Queue_Screen_SystemTime queue_systemtime;
-            if (xQueueReceive(V_handle_queue_screen_systemtime, &queue_systemtime, 0) == pdPASS)
-            {
-                char info_systemtime[20];
-                sprintf(info_systemtime, "Boot Time:%.1f s", queue_systemtime.second);
-                FuncLCD1DrawRectangleForCorner(0, 0, STATUS_LCD_PIXELWIDTH, V_font_ascii_handle_conslons_16x8.height, STATUS_LCD_COLOUR_BACKGROUND, STATUS_LCD_FILL_FULL);
-                FuncLCD1DrawStrForASCII(0, 0, info_systemtime, STATUS_LCD_COLOUR_MAGENTA, &V_font_ascii_handle_conslons_16x8);
-            }
-            xEventGroupClearBits(V_handle_event_screen_refresh, EVENT_SCREEN_REFRESH_SYSTEMTIME);
-        }
-    }
-}
-void TaskScreenSystemTime(void)
-{
-    while (1)
-    {
-        Type_Queue_Screen_SystemTime info;
-        static Type_Queue_Screen_SystemTime info_record;
-
-        info.second = (float)xTaskGetTickCount() / 1000.0;
-
-        if (info.second != info_record.second)
-        {
-            info_record.second = info.second;
-
-            if (!(xEventGroupGetBits(V_handle_event_screen_refresh) & EVENT_SCREEN_REFRESH_SYSTEMTIME))
-            {
-                FUNC_CHECK_FOR_FREERTOS(xQueueSendToBack(
-                                            V_handle_queue_screen_systemtime, /*消息队列句柄*/
-                                            &info,                            /*消息指针*/
-                                            V_TASK_DELAY_TIME(1000)),         /*超时时间*/
-                                        "ERROR_QueueSend_Type_Queue_Screen_SystemTime");
-                xEventGroupSetBits(
-                    V_handle_event_screen_refresh,    /*事件组句柄*/
-                    EVENT_SCREEN_REFRESH_SYSTEMTIME); /*要置位的事件*/
-            }
-        }
-        vTaskDelay(V_TASK_DELAY_TIME(1000));
     }
 }
 
@@ -200,17 +164,13 @@ void TaskCapacitiveButtonLED(void)
         {
             info_record.width = info.width;
 
-            if (!(xEventGroupGetBits(V_handle_event_screen_refresh) & EVENT_SCREEN_REFRESH_CAPACITIVEBUTTON))
-            {
-                FUNC_CHECK_FOR_FREERTOS(xQueueSendToBack(
-                                            V_handle_queue_screen_capacitivebutton, /*消息队列句柄*/
-                                            &info,                                  /*消息指针*/
-                                            V_TASK_DELAY_TIME(1000)),               /*超时时间*/
-                                        "ERROR_QueueSend_Type_Queue_Screen_CapacitiveButton");
-                xEventGroupSetBits(
-                    V_handle_event_screen_refresh,          /*事件组句柄*/
-                    EVENT_SCREEN_REFRESH_CAPACITIVEBUTTON); /*要置位的事件*/
-            }
+            FUNC_CHECK_FOR_FREERTOS(xQueueOverwrite(
+                                        V_handle_queue_screen_capacitivebutton, /*消息队列句柄*/
+                                        &info),                                 /*消息指针*/
+                                    "ERROR_QueueSend_Type_Queue_Screen_CapacitiveButton");
+            xEventGroupSetBits(
+                V_handle_event_screen_refresh,          /*事件组句柄*/
+                EVENT_SCREEN_REFRESH_CAPACITIVEBUTTON); /*要置位的事件*/
         }
 
         vTaskDelay(V_TASK_DELAY_TIME(50));
@@ -230,17 +190,13 @@ void TaskTim5General(void)
         {
             info_record.ch1_ic_value = info.ch1_ic_value;
 
-            if (!(xEventGroupGetBits(V_handle_event_screen_refresh) & EVENT_SCREEN_REFRESH_TIM5GENERAL))
-            {
-                FUNC_CHECK_FOR_FREERTOS(xQueueSendToBack(
-                                            V_handle_queue_screen_tim5general, /*消息队列句柄*/
-                                            &info,                             /*消息指针*/
-                                            V_TASK_DELAY_TIME(1000)),          /*超时时间*/
-                                        "ERROR_QueueSend_Type_Queue_Screen_Tim5General");
-                xEventGroupSetBits(
-                    V_handle_event_screen_refresh,     /*事件组句柄*/
-                    EVENT_SCREEN_REFRESH_TIM5GENERAL); /*要置位的事件*/
-            }
+            FUNC_CHECK_FOR_FREERTOS(xQueueOverwrite(
+                                        V_handle_queue_screen_tim5general, /*消息队列句柄*/
+                                        &info),                            /*消息指针*/
+                                    "ERROR_QueueSend_Type_Queue_Screen_Tim5General");
+            xEventGroupSetBits(
+                V_handle_event_screen_refresh,     /*事件组句柄*/
+                EVENT_SCREEN_REFRESH_TIM5GENERAL); /*要置位的事件*/
         }
 
         vTaskDelay(V_TASK_DELAY_TIME(50));
@@ -260,21 +216,26 @@ void TaskADC(void)
         {
             info_record.ch1_voltage = info.ch1_voltage;
 
-            if (!(xEventGroupGetBits(V_handle_event_screen_refresh) & EVENT_SCREEN_REFRESH_ADC))
-            {
-                FUNC_CHECK_FOR_FREERTOS(xQueueSendToBack(
-                                            V_handle_queue_screen_adc, /*消息队列句柄*/
-                                            &info,                     /*消息指针*/
-                                            V_TASK_DELAY_TIME(1000)),  /*超时时间*/
-                                        "ERROR_QueueSend_Type_Queue_Screen_ADC");
-                xEventGroupSetBits(
-                    V_handle_event_screen_refresh, /*事件组句柄*/
-                    EVENT_SCREEN_REFRESH_ADC);     /*要置位的事件*/
-            }
+            FUNC_CHECK_FOR_FREERTOS(xQueueOverwrite(
+                                        V_handle_queue_screen_adc, /*消息队列句柄*/
+                                        &info),                    /*消息指针*/
+                                    "ERROR_QueueSend_Type_Queue_Screen_ADC");
+            xEventGroupSetBits(
+                V_handle_event_screen_refresh, /*事件组句柄*/
+                EVENT_SCREEN_REFRESH_ADC);     /*要置位的事件*/
         }
 
         vTaskDelay(V_TASK_DELAY_TIME(50));
     }
+}
+
+void TimerTaskScreenSystemTime(void *id_timer)
+{
+    char info_systemtime[20];
+    float time_second = (float)xTaskGetTickCount() / 1000.0;
+    sprintf(info_systemtime, "Boot Time:%.1f s", time_second);
+    FuncLCD1DrawRectangleForCorner(0, 0, STATUS_LCD_PIXELWIDTH, V_font_ascii_handle_conslons_16x8.height, STATUS_LCD_COLOUR_BACKGROUND, STATUS_LCD_FILL_FULL);
+    FuncLCD1DrawStrForASCII(0, 0, info_systemtime, STATUS_LCD_COLOUR_MAGENTA, &V_font_ascii_handle_conslons_16x8);
 }
 
 #else

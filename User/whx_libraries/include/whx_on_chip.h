@@ -2,7 +2,6 @@
 #define H_WHX_ON_CHIP_
 
 #include "whx_libraries_all.h"
-#include "whx_peripherals.h"
 
 /**
  * @description: FSMC端口配置
